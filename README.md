@@ -1,2 +1,2 @@
 # ecl-utils
-utilities for hpcc ecl language
+utility functions for hpcc ecl language
