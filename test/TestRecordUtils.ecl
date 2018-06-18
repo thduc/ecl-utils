@@ -2,7 +2,6 @@
 #Workunit('Name', 'TestRecordUtils');
 
 IMPORT utils.RecordUtils;
-IMPORT utils.RecordUtils;
 
 ChildRec := {INTEGER intVal, STRING stringVal};
 ParentRec := {BOOLEAN boolVal, ChildRec child, SET OF STRING strings};
@@ -32,3 +31,9 @@ r3 := ROW(
   )
 );
 ASSERT(HASH(r3) = HASH(modRecordHelper.CopyRecord(parentRow, boolVal := FALSE, strings := ['a', 'b'])), 'CopyRecord should work');
+
+r1 := ROW(parentRow, TRANSFORM({LEFT.boolVal, ChildRec child}, SELF := LEFT));
+r2 := ROW(parentRow, TRANSFORM(RecordUtils.CreateSlimLayout(ParentRec, ['boolVal', 'child']), SELF := LEFT));
+ASSERT(HASH(r1) = HASH(r2), 'CreateSlimLayout should work with nested field');
+
+RecordUtils.GetFieldStructure(ParentRec);
