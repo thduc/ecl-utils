@@ -11,10 +11,6 @@ parentRow := ROW({TRUE, childRow, ['a', 'b', 'c']}, ParentRec);
 
 modRecordHelper := RecordUtils.CreateHelperModuleForLayout(ParentRec);
 
-modRecordHelper.ToStringExpression;
-modRecordHelper.CopyRecordParamExpression;
-modRecordHelper.CopyRecordAssignmentExpression;
-
 modRecordHelper.ToString(parentRow);
 modRecordHelper.CopyRecord(parentRow, boolVal := FALSE, strings := ['a', 'b']);
 

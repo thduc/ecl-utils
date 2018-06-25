@@ -127,9 +127,11 @@
     #SET(toStringExpr, %'toStringRecordOpeningParamName'% + ' + ' + %'toStringExpr'% + ' + ' + %'toStringRecordClosingParamName'%)
 
     LOCAL ModuleName := MODULE
+      /*
       EXPORT STRING ToStringExpression := %'toStringExpr'%;
       EXPORT STRING CopyRecordParamExpression := %'copyRecordParamExpr'%;
       EXPORT STRING CopyRecordAssignmentExpression := %'copyRecordAssignmentExpr'%;
+      */
       /*
         Convert input row (record) to string
       */
@@ -159,7 +161,7 @@
   EXPORT CreateSlimLayout(Layout, Fields2Keep) := FUNCTIONMACRO
     #UNIQUENAME(StringUtils)
     IMPORT utils.StringUtils AS %StringUtils%;
-    LOCAL LayoutWithKeptFields2Keep := {
+    LOCAL LayoutWithFields2Keep := {
       #EXPAND(
         %StringUtils%.JoinTwoSetsOfStrings(
           Fields2Keep,
@@ -173,7 +175,7 @@
         )      
       )
     };
-    RETURN LayoutWithKeptFields2Keep;
+    RETURN LayoutWithFields2Keep;
   ENDMACRO;
 
   /*
