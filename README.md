@@ -26,8 +26,10 @@ row1 := ROW({1, 1, 'a'}, rec1);
   _Example_: `m1.ToString(row1, ', ', '[', ']') => '[1, 1, a]'`
   * **CopyRecord**: create a copy of a record/row with optional input fields/attributes.<br/>
   _Example_: `m1.CopyRecord(row1, intVal2 := 2, stringVal := 'b') => ROW({1, 2, 'b'}, rec1)`
-* **CreateSlimLayout**: create a slim layout with only interested fields/attributes.<br/>
-_Example_: `CreateSlimLayout(rec1, ['intVal1', 'stringVal']) => {INTEGER intVal1, STRING stringVal}`
+* **SlimLayout**: create a slim layout with only interested fields/attributes.<br/>
+_Example_: `SlimLayout(rec1, ['intVal1', 'stringVal']) => {INTEGER intVal1, STRING stringVal}`
+* **TransformRecord**: transform a record to a given layout. Fill missing fields (if any) with default values.<br/>
+_Example_: ` `
 * **GetFieldStructure**: return dataset containing information about data type of a record type or dataset.<br/>
 _Example_:
 ```
@@ -55,17 +57,7 @@ OUTPUT(ds1) =>
 | 1       | 2       | ab        | 
 ```
 
-* **SlimDatasetByLayout**: Slim input dataset, keep only field in the given layout.<br/>
-_Example_:
-```
-rec2 := rec1 AND NOT [intVal2];
-SlimDatasetByLayout(ds1, rec2) =>
-
-| intval1 | stringval | 
-|---------|-----------| 
-| 1       | ab        | 
-```
-* **SlimDatasetByFields**: Slim input dataset, keep only given fields.<br/>
+* **SlimDatasetByFields**: Slim input dataset (aka SELECT), keep only given fields.<br/>
 _Example_:
 ```
 SlimDatasetByFields(ds1, ['intVal1', 'stringVal']) =>
@@ -74,11 +66,18 @@ SlimDatasetByFields(ds1, ['intVal1', 'stringVal']) =>
 |---------|-----------| 
 | 1       | ab        | 
 ```
-* **ExpandDataset**: Enlarge dataset (make it wider) to a given layout. Fill missing fields with default values.<br/>
+* **TransformDataset**: Transform a dataset to a given layout. Fill missing fields (if any) with default values.<br/>
 _Example_:
 ```
+rec2 := rec1 AND NOT [intVal2];
+TransformDataset(ds1, rec2) =>
+
+| intval1 | stringval | 
+|---------|-----------| 
+| 1       | ab        | 
+
 rec4 := {rec1, BOOLEAN boolVal, REAL realVal};
-ExpandDataset(ds1, rec4) =>
+TransformDataset(ds1, rec4) =>
 
 | intval1 | intval2 | stringval | boolval | realval | 
 |---------|---------|-----------|---------|---------| 

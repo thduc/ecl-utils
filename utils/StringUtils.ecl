@@ -10,7 +10,7 @@
     #SET(idx, 1)
     #SET(size, COUNT(StringSet))
     #SET(value, '')
-    
+
     #LOOP
       #IF(%idx% > %size%)
         #BREAK
@@ -38,7 +38,7 @@
       #SET(size, COUNT(RightSet))
     #END
     #SET(value, '')
-    
+
     #LOOP
       #IF(%idx% > %size%)
         #BREAK

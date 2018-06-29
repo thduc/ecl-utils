@@ -16,7 +16,7 @@
     #SET(toStringRecordOpeningParamName, 'recordOpening')
     #UNIQUENAME(toStringRecordClosingParamName)
     #SET(toStringRecordClosingParamName, 'recordClosing')
-    
+
     #UNIQUENAME(isInNestedDataset)
     #SET(isInNestedDataset, 0)
     #UNIQUENAME(isInNestedRecord)
@@ -132,18 +132,19 @@
       EXPORT STRING CopyRecordParamExpression := %'copyRecordParamExpr'%;
       EXPORT STRING CopyRecordAssignmentExpression := %'copyRecordAssignmentExpr'%;
       */
+      SHARED InternalLayout := Layout;
       /*
-        Convert input row (record) to string
+        Convert input row (record) to string.
       */
       EXPORT STRING ToString(Layout intputRow, STRING fieldDelimiter = ', ', STRING recordOpening = '(', STRING recordClosing = ')') := FUNCTION
         RETURN #EXPAND(%'toStringExpr'% + ';')
       END;
       /*
-        Create a copy of row (record) with optional input fields/attributes
+        Create a copy of row (record) with optional input fields/attributes.
       */
       EXPORT Layout CopyRecord(Layout intputRow, #EXPAND(%'copyRecordParamExpr'%)) := FUNCTION
         RETURN ROW(
-          intputRow, 
+          intputRow,
           TRANSFORM(
             Layout,
             #EXPAND(%'copyRecordAssignmentExpr'% + ',\n')
@@ -156,9 +157,9 @@
   ENDMACRO;
 
   /*
-    Create slim layout with only given fields
+    Create slim layout with only given fields.
   */
-  EXPORT CreateSlimLayout(Layout, Fields2Keep) := FUNCTIONMACRO
+  EXPORT SlimLayout(Layout, Fields2Keep) := FUNCTIONMACRO
     #UNIQUENAME(StringUtils)
     IMPORT utils.StringUtils AS %StringUtils%;
     LOCAL LayoutWithFields2Keep := {
@@ -172,14 +173,28 @@
           '',
           ' ',
           ', '
-        )      
+        )
       )
     };
     RETURN LayoutWithFields2Keep;
   ENDMACRO;
 
   /*
-    Get the structure of the input
+    Transform a record to a given layout, missing fields get default values.
+  */
+  EXPORT TransformRecord(inputRow, Layout) := FUNCTIONMACRO
+    RETURN ROW(
+      inputRow,
+      TRANSFORM(
+        Layout,
+        SELF := inputRow,
+        SELF := []
+      )
+    );
+  ENDMACRO;
+
+  /*
+    Get the structure of the input.
   */
   EXPORT GetFieldStructure(input) := FUNCTIONMACRO
     LOADXML('<xml/>');
