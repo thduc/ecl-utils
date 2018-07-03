@@ -19,17 +19,22 @@ Utility functions (function macros) to work with record.
 rec1 := {INTEGER intVal1, INTEGER intVal2, STRING stringVal};
 m1 := RecordUtils.CreateHelperModuleForLayout(rec1);
 row1 := ROW({1, 1, 'a'}, rec1);
+row2 := ROW({1, 2, 'b'}, rec1);
+rec2 := RecordUtils.SlimLayout(rec1, ['intVal1', 'stringVal']);
+row3 := ROW({1, 'a'}, rec2);
+row4 := ROW({1, 0, 'a'}, rec1);
 ```
 
 * **CreateHelperModuleForLayout**: create a helper (utility) module to work with a given record layout. Module created has the following functions:
   * **ToString**: convert input row/record to string.<br/>
   _Example_: `m1.ToString(row1, ', ', '[', ']') => '[1, 1, a]'`
   * **CopyRecord**: create a copy of a record/row with optional input fields/attributes.<br/>
-  _Example_: `m1.CopyRecord(row1, intVal2 := 2, stringVal := 'b') => ROW({1, 2, 'b'}, rec1)`
+  _Example_: `m1.CopyRecord(row1, intVal2 := 2, stringVal := 'b') => row2`
 * **SlimLayout**: create a slim layout with only interested fields/attributes.<br/>
 _Example_: `SlimLayout(rec1, ['intVal1', 'stringVal']) => {INTEGER intVal1, STRING stringVal}`
 * **TransformRecord**: transform a record to a given layout. Fill missing fields (if any) with default values.<br/>
-_Example_: ` `
+_Example_: `TransformRecord(row3, rec1) => row4`
+
 * **GetFieldStructure**: return dataset containing information about data type of a record type or dataset.<br/>
 _Example_:
 ```
@@ -66,7 +71,7 @@ SlimDatasetByFields(ds1, ['intVal1', 'stringVal']) =>
 |---------|-----------| 
 | 1       | ab        | 
 ```
-* **TransformDataset**: Transform a dataset to a given layout. Fill missing fields (if any) with default values.<br/>
+* **TransformDataset**: Transform a dataset to a given layout or transform function. In case of Layout fill missing fields with default values.<br/>
 _Example_:
 ```
 rec2 := rec1 AND NOT [intVal2];
@@ -79,6 +84,11 @@ TransformDataset(ds1, rec2) =>
 rec4 := {rec1, BOOLEAN boolVal, REAL realVal};
 TransformDataset(ds1, rec4) =>
 
+| intval1 | intval2 | stringval | boolval | realval | 
+|---------|---------|-----------|---------|---------| 
+| 1       | 2       | ab        | false   | 0.0     | 
+
+TransformDataset(ds1, TRANSFORM(rec4, SELF := LEFT, SELF := [])) =>
 | intval1 | intval2 | stringval | boolval | realval | 
 |---------|---------|-----------|---------|---------| 
 | 1       | 2       | ab        | false   | 0.0     | 

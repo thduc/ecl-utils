@@ -21,5 +21,8 @@ ASSERT(HASH(ds2[1]) = HASH(ds3[1]), 'TransformDataset & SlimDatasetByFields shou
 rec4 := {rec1, BOOLEAN boolVal, REAL realVal};
 ds4 := DatasetUtils.TransformDataset(ds1, rec4);
 ds4;
+ds5 := DatasetUtils.TransformDataset(ds1, TRANSFORM(rec4, SELF := LEFT, SELF := []));
+ds5;
 
 ASSERT(HASH(ds1[1]) = HASH(DatasetUtils.TransformDataset(ds4, rec1)[1]), 'Usage of TransformDataset & SlimDatasetByLayout should produce predictable result.');
+ASSERT(HASH(ds4[1]) = HASH(ds5[1]), 'Usage of TransformDataset with Layout or with Transform function should produce the same result.');
