@@ -6,9 +6,21 @@ Utility functions to work with HPCC ECL language.
 ## StringUtils
 Utility functions (function macros) to work with string.
 
-* **JoinSetOfStrings**: combine set of string into one single string.<br/>
+* **JoinSetOfStrings(StringSet, ElementPrefix, ElementPostfix, OpCombine)**: combines set of strings into one single string.
+  * **StringSet**: set of input strings.
+  * **ElementPrefix**: text to preprend to every item of the set.
+  * **ElementPostfix**: text to append to every item of the set.
+  * **OpCombine**: text that connects two consecutive items.<br/>
 _Example_: `JoinSetOfStrings(['a', 'b'], '(', ')', '-') => (a)-(b)`
-* **JoinTwoSetsOfStrings**: create a single string from two set of strings.<br/>
+* **JoinTwoSetsOfStrings(LeftSet, RightSet, PrefixLeft, PrefixRight, PostfixLeft, PostfixRight, OpElement, OpCombine)**: create a single string from two set of strings.<br/>
+  * **LeftSet**: first set of input strings.
+  * **RightSet**: second set of input strings.
+  * **PrefixLeft**: text to preprend to every item of the first set.
+  * **PrefixRight**: text to preprend to every item of the second set.
+  * **PostfixLeft**: text to append to every item of the first set.
+  * **PostfixRight**: text to append to every item of the second set.
+  * **OpElement**: text that connects two items from first & second sets.
+  * **OpCombine**: text that connects two consecutive pair of items.<br/>
 _Example_: `JoinTwoSetsOfStrings(['a', 'b'], ['1', '2'], '[', '(', ']', ')', '.', '-') => [a].(1)-[b].(2)`
 
 ---
@@ -25,17 +37,28 @@ row3 := ROW({1, 'a'}, rec2);
 row4 := ROW({1, 0, 'a'}, rec1);
 ```
 
-* **CreateHelperModuleForLayout**: create a helper (utility) module to work with a given record layout. Module created has the following functions:
-  * **ToString**: convert input row/record to string.<br/>
+* **CreateHelperModuleForLayout(Layout)**: create a helper (utility) module to work with a given record layout. Module created has the following functions:
+  * **ToString(Layout intputRow, STRING fieldDelimiter = ', ', STRING recordOpening = '(', STRING recordClosing = ')')**: convert input row/record to string.
+    * **intputRow**: input row/record.
+    * **fieldDelimiter**: seperator.
+    * **recordOpening**: text to prepend.
+    * **recordClosing**: text to append.<br/>
   _Example_: `m1.ToString(row1, ', ', '[', ']') => '[1, 1, a]'`
-  * **CopyRecord**: create a copy of a record/row with optional input fields/attributes.<br/>
+  * **CopyRecord(Layout intputRow[, fieldName = value])**: create a copy of a record/row with optional input fields/attributes.
+    * **intputRow**: input row/record.
+    * **fieldName**: comma-delimited list of fields to update value.<br/>
   _Example_: `m1.CopyRecord(row1, intVal2 := 2, stringVal := 'b') => row2`
-* **SlimLayout**: create a slim layout with only interested fields/attributes.<br/>
+* **SlimLayout(Layout, Fields2Keep)**: create a slim layout with only interested fields/attributes.
+  * **Layout**: Layout to slim.
+  * **Fields2Keep**: set of fields to keep.<br/>
 _Example_: `SlimLayout(rec1, ['intVal1', 'stringVal']) => {INTEGER intVal1, STRING stringVal}`
-* **TransformRecord**: transform a record to a given layout. Fill missing fields (if any) with default values.<br/>
+* **TransformRecord(inputRow, Layout)**: transform a record to a given layout. Fill missing fields (if any) with default values.
+  * **intputRow**: input row/record.
+  * **Layout**: target Layout.<br/>
 _Example_: `TransformRecord(row3, rec1) => row4`
 
-* **GetFieldStructure**: return dataset containing information about data type of a record type or dataset.<br/>
+* **GetFieldStructure(input)**: return dataset containing information about data type of a record type or dataset.
+  * **input**: dataset or layout.<br/>
 _Example_:
 ```
 GetFieldStructure(rec1) =>
@@ -62,7 +85,9 @@ OUTPUT(ds1) =>
 | 1       | 2       | ab        | 
 ```
 
-* **SlimDatasetByFields**: Slim input dataset (aka SELECT), keep only given fields.<br/>
+* **SlimDatasetByFields(inputDS, Fields2Keep)**: Slim input dataset (aka SELECT), keep only given fields.
+  * **inputDS**: input dataset.
+  * **Fields2Keep**: set of fields to keep.<br/>
 _Example_:
 ```
 SlimDatasetByFields(ds1, ['intVal1', 'stringVal']) =>
@@ -71,7 +96,9 @@ SlimDatasetByFields(ds1, ['intVal1', 'stringVal']) =>
 |---------|-----------| 
 | 1       | ab        | 
 ```
-* **TransformDataset**: Transform a dataset to a given layout or transform function. In case of Layout fill missing fields with default values.<br/>
+* **TransformDataset(inputDS, TransLayout)**: Transform a dataset to a given layout or inline transform function. In case of Layout fill missing fields with default values.
+  * **inputDS**: input dataset.
+  * **TransLayout**: either target layout or inline transform function.<br/>
 _Example_:
 ```
 rec2 := rec1 AND NOT [intVal2];

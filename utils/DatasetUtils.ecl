@@ -22,7 +22,7 @@
   ENDMACRO;
 
   /*
-    Transform a dataset to a given layout or transform function. In case of Layout fill missing fields with default values.
+    Transform a dataset to a given layout or inline transform function. In case of Layout fill missing fields with default values.
   */
   EXPORT TransformDataset(inputDS, TransLayout) := FUNCTIONMACRO
     #UNIQUENAME(hasTransformer)
