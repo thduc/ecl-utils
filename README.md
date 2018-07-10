@@ -278,18 +278,18 @@ FoldLeftValue(intDS1, 0, folder2) => 45
 TokenMapRec := {STRING token, STRING value};
 tokenMap := DATASET(
   [
-    {'[SourceSystemGroup]', 'uk'},
-    {'[SourceSystem]', 'gk'},
     {'[Root]', 'proagrica'},
     {'[Branch]', 'develop'},
     {'[Entities]', 'entities'},
+    {'[SourceSystemGroup]', 'uk'},
+    {'[SourceSystem]', 'gk'},
     {'[EntityName]', 'crop'},
     {'[Suffix]', 'super'}
   ],
   TokenMapRec
 );
 STRING replaceToken(STRING inputStr, TokenMapRec r) := Str.FindReplace(inputStr, r.token, r.value);
-fileNameTemplate := '~[Root]::[Branch]::[Entities]::[SourceSystemGroup]::[SourceSystem]::[EntityName]::[Suffix]';
+STRING fileNameTemplate := '~[Root]::[Branch]::[Entities]::[SourceSystemGroup]::[SourceSystem]::[EntityName]::[Suffix]';
 FoldLeftValue(tokenMap, fileNameTemplate, replaceToken) => '~proagrica::develop::entities::uk::gk::crop::super'
 ```
 
