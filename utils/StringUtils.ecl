@@ -3,12 +3,12 @@
   /*
     Join set of strings into a string
   */
-  EXPORT JoinSetOfStrings(StringSet, ElementPrefix, ElementPostfix, OpCombine) := FUNCTIONMACRO
+  EXPORT JoinSetOfStrings(stringSet, elementPrefix, elementPostfix, opCombine) := FUNCTIONMACRO
     #UNIQUENAME(idx)
     #UNIQUENAME(size)
     #UNIQUENAME(value)
     #SET(idx, 1)
-    #SET(size, COUNT(StringSet))
+    #SET(size, COUNT(stringSet))
     #SET(value, '')
 
     #LOOP
@@ -16,9 +16,9 @@
         #BREAK
       #ELSE
         #IF(%idx% > 1)
-          #APPEND(value, OpCombine)
+          #APPEND(value, opCombine)
         #END
-        #APPEND(value, ElementPrefix + StringSet[%idx%] + ElementPostfix)
+        #APPEND(value, elementPrefix + stringSet[%idx%] + elementPostfix)
       #END
       #SET(idx, %idx% + 1)
     #END
@@ -28,14 +28,14 @@
   /*
     Join two sets of strings into a string
   */
-  EXPORT JoinTwoSetsOfStrings(LeftSet, RightSet, PrefixLeft, PrefixRight, PostfixLeft, PostfixRight, OpElement, OpCombine) := FUNCTIONMACRO
+  EXPORT JoinTwoSetsOfStrings(leftSet, rightSet, prefixLeft, prefixRight, postfixLeft, postfixRight, opElement, opCombine) := FUNCTIONMACRO
     #UNIQUENAME(idx)
     #UNIQUENAME(size)
     #UNIQUENAME(value)
     #SET(idx, 1)
-    #SET(size, COUNT(LeftSet))
-    #IF(%size% > COUNT(RightSet))
-      #SET(size, COUNT(RightSet))
+    #SET(size, COUNT(leftSet))
+    #IF(%size% > COUNT(rightSet))
+      #SET(size, COUNT(rightSet))
     #END
     #SET(value, '')
 
@@ -44,9 +44,9 @@
         #BREAK
       #ELSE
         #IF(%idx% > 1)
-          #APPEND(value, OpCombine)
+          #APPEND(value, opCombine)
         #END
-        #APPEND(value, PrefixLeft + LeftSet[%idx%] + PostfixLeft + OpElement + PrefixRight + RightSet[%idx%] + PostfixRight)
+        #APPEND(value, prefixLeft + leftSet[%idx%] + postfixLeft + opElement + prefixRight + rightSet[%idx%] + postfixRight)
       #END
       #SET(idx, %idx% + 1)
     #END

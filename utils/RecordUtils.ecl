@@ -3,7 +3,7 @@
   /*
     Create a helper module with helper functions for a given layout.
   */
-  EXPORT CreateHelperModuleForLayout(Layout) := FUNCTIONMACRO
+  EXPORT CreateHelperModuleForLayout(layout) := FUNCTIONMACRO
     LOADXML('<xml/>');
     #UNIQUENAME(StdStr)
     IMPORT STD.Str AS %StdStr%;
@@ -38,7 +38,7 @@
     #UNIQUENAME(copyRecordAssignmentExpr)
     #SET(copyRecordAssignmentExpr, '')
 
-    #EXPORTXML(xmlOutput, Layout)
+    #EXPORTXML(xmlOutput, layout)
     #FOR(xmlOutput)
       #FOR(Field)
         #IF(%{@isEnd}% = 1) // last element of the embedded/nested dataset, record
@@ -131,22 +131,22 @@
       EXPORT STRING ToStringExpression := %'toStringExpr'%;
       EXPORT STRING CopyRecordParamExpression := %'copyRecordParamExpr'%;
       EXPORT STRING CopyRecordAssignmentExpression := %'copyRecordAssignmentExpr'%;
+      SHARED InternalLayout := layout;
       */
-      SHARED InternalLayout := Layout;
       /*
         Convert input row (record) to string.
       */
-      EXPORT STRING ToString(Layout intputRow, STRING fieldDelimiter = ', ', STRING recordOpening = '(', STRING recordClosing = ')') := FUNCTION
+      EXPORT STRING ToString(layout intputRow, STRING fieldDelimiter = ', ', STRING recordOpening = '(', STRING recordClosing = ')') := FUNCTION
         RETURN #EXPAND(%'toStringExpr'% + ';')
       END;
       /*
         Create a copy of row (record) with optional input fields/attributes.
       */
-      EXPORT Layout CopyRecord(Layout intputRow, #EXPAND(%'copyRecordParamExpr'%)) := FUNCTION
+      EXPORT layout CopyRecord(layout intputRow, #EXPAND(%'copyRecordParamExpr'%)) := FUNCTION
         RETURN ROW(
           intputRow,
           TRANSFORM(
-            Layout,
+            layout,
             #EXPAND(%'copyRecordAssignmentExpr'% + ',\n')
             SELF := LEFT
           )
@@ -159,15 +159,15 @@
   /*
     Create slim layout with only given fields.
   */
-  EXPORT SlimLayout(Layout, Fields2Keep) := FUNCTIONMACRO
+  EXPORT SlimLayout(layout, fields2Keep) := FUNCTIONMACRO
     #UNIQUENAME(StringUtils)
     IMPORT utils.StringUtils AS %StringUtils%;
-    LOCAL LayoutWithFields2Keep := {
+    LOCAL LayoutWithfields2Keep := {
       #EXPAND(
         %StringUtils%.JoinTwoSetsOfStrings(
-          Fields2Keep,
-          Fields2Keep,
-          'TYPEOF(' + #TEXT(Layout) + '.',
+          fields2Keep,
+          fields2Keep,
+          'TYPEOF(' + #TEXT(layout) + '.',
           '',
           ')',
           '',
@@ -176,17 +176,17 @@
         )
       )
     };
-    RETURN LayoutWithFields2Keep;
+    RETURN LayoutWithfields2Keep;
   ENDMACRO;
 
   /*
     Transform a record to a given layout, missing fields get default values.
   */
-  EXPORT TransformRecord(inputRow, Layout) := FUNCTIONMACRO
+  EXPORT TransformRecord(inputRow, layout) := FUNCTIONMACRO
     RETURN ROW(
       inputRow,
       TRANSFORM(
-        Layout,
+        layout,
         SELF := inputRow,
         SELF := []
       )

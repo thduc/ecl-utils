@@ -3,10 +3,10 @@
   /*
     Slim the dataset keep only given fields.
   */
-  EXPORT SlimDatasetByFields(inputDS, Fields2Keep) := FUNCTIONMACRO
+  EXPORT SlimDatasetByFields(inputDS, fields2Keep) := FUNCTIONMACRO
     #UNIQUENAME(RecordUtils)
     IMPORT utils.RecordUtils AS %RecordUtils%;
-    LOCAL Layout := %RecordUtils%.SlimLayout(inputDS, Fields2Keep);
+    LOCAL Layout := %RecordUtils%.SlimLayout(inputDS, fields2Keep);
     LOCAL outputDS := PROJECT(
       inputDS,
       TRANSFORM(
@@ -22,15 +22,15 @@
   ENDMACRO;
 
   /*
-    Transform a dataset to a given layout or inline transform function. In case of Layout fill missing fields with default values.
+    Transform a dataset to a given layout or inline transform function. In case of layout fill missing fields with default values.
   */
-  EXPORT TransformDataset(inputDS, TransLayout) := FUNCTIONMACRO
+  EXPORT TransformDataset(inputDS, f) := FUNCTIONMACRO
     #UNIQUENAME(hasTransformer)
     #SET(hasTransformer, FALSE)
-    #IF(REGEXFIND('^\\s*transform\\s*\\(.+\\)\\s*$', #TEXT(TransLayout), NOCASE))
+    #IF(REGEXFIND('^\\s*transform\\s*\\(.+\\)\\s*$', #TEXT(f), NOCASE))
       #SET(hasTransformer, TRUE)
     #ELSE
-      LOCAL TransLayout transformerFunc(RECORDOF(inputDS) input) := TRANSFORM
+      LOCAL f transformerFunc(RECORDOF(inputDS) input) := TRANSFORM
         SELF := input;
         SELF := [];
       END;
@@ -38,7 +38,7 @@
     LOCAL outputDS := PROJECT(
       inputDS,
       #IF(%hasTransformer%)
-        TransLayout
+        f
       #ELSE
         transformerFunc(LEFT)
       #END
