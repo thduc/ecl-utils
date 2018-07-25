@@ -26,3 +26,6 @@ ds5;
 
 ASSERT(HASH(ds1[1]) = HASH(DatasetUtils.TransformDataset(ds4, rec1)[1]), 'Usage of TransformDataset & SlimDatasetByLayout should produce predictable result.');
 ASSERT(HASH(ds4[1]) = HASH(ds5[1]), 'Usage of TransformDataset with Layout or with Transform function should produce the same result.');
+
+ds6 := DatasetUtils.CreateDataset(rec4, ['intVal1', 'intVal2', 'stringVal'], [{1, 2, 'ab'}]);
+ds6;

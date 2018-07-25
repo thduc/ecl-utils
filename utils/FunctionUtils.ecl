@@ -142,6 +142,102 @@
     RETURN outputResult.Value;
   ENDMACRO;
 
+  EXPORT _PrefixScan_(inputDS, z, f, isFromRight) := FUNCTIONMACRO
+    LOCAL inputLayout := RECORDOF(inputDS);
+    LOCAL outputLayout := RECORDOF(z);
+    #UNIQUENAME(g)
+    #IF(isFromRight)
+      LOCAL outputLayout %g%(inputLayout a, outputLayout b) := f(a, b);
+    #ELSE
+      LOCAL outputLayout %g%(inputLayout a, outputLayout b) := f(b, a);
+    #END
+    LOCAL dummyOutput := ROW([], outputLayout);
+    LOCAL transformedLayout := {inputLayout current, outputLayout cumulative, UNSIGNED c};
+    LOCAL tranformedInput := PROJECT(
+      inputDS,
+      TRANSFORM(
+        transformedLayout,
+        SELF.current := LEFT,
+        SELF.cumulative := dummyOutput,
+        SELF.c := COUNTER
+      ),
+      LOCAL,
+      ORDERED,
+      STABLE,
+      PARALLEL
+    );
+    LOCAL processInput := IF(isFromRight, SORT(tranformedInput, -c), tranformedInput);
+    LOCAL processOutput := PROCESS(
+      processInput,
+      z,
+      TRANSFORM(
+        transformedLayout,
+        SELF.cumulative := %g%(LEFT.current, RIGHT),
+        SELF := LEFT
+      ),
+      TRANSFORM(
+        outputLayout,
+        SELF := %g%(LEFT.current, RIGHT)
+      ),
+      ORDERED,
+      STABLE
+    );
+    LOCAL outputDS := IF(isFromRight, SORT(processOutput, c), processOutput);
+    RETURN outputDS;
+  ENDMACRO;
+  /*
+    Produce a dataset containing cumulative results of applying the operator going left to right or right to left.
+    Given: ds[A]
+           z[B]
+           f: (B, A) -> B (from left to right) or (A, B) -> B (from right to left).
+           isFromRight: optional, scan from right -> left or left -> right, default left -> right.
+    Return: ds[B]
+  */
+  EXPORT Scan(inputDS, z, f, isFromRight = FALSE) := FUNCTIONMACRO
+    #UNIQUENAME(FunctionUtils)
+    IMPORT utils.FunctionUtils AS %FunctionUtils%;
+    LOCAL outputLayout := RECORDOF(z);
+    LOCAL processOutput := %FunctionUtils%._PrefixScan_(inputDS, z, f, isFromRight);
+    LOCAL outputDS := PROJECT(
+      processOutput,
+      TRANSFORM(
+        outputLayout,
+        SELF := LEFT.cumulative
+      ),
+      LOCAL,
+      ORDERED,
+      STABLE,
+      PARALLEL
+    );
+    RETURN outputDS;
+  ENDMACRO;
+
+  /*
+    Produce a dataset containing cumulative results of applying the operator going left to right.
+    Given: ds[A]
+           z[B]
+           f: (B, A) -> B
+    Return: ds[B]
+  */
+  EXPORT ScanLeft(inputDS, z, f) := FUNCTIONMACRO
+    #UNIQUENAME(FunctionUtils)
+    IMPORT utils.FunctionUtils AS %FunctionUtils%;
+    RETURN %FunctionUtils%.Scan(inputDS, z, f, isFromRight := FALSE);
+  ENDMACRO;
+
+  /*
+    Produce a dataset containing cumulative results of applying the operator going right to left.
+    Given: ds[A]
+           z[B]
+           f: (A, B) -> B
+    Return: ds[B]
+  */
+  EXPORT ScanRight(inputDS, z, f) := FUNCTIONMACRO
+    #UNIQUENAME(FunctionUtils)
+    IMPORT utils.FunctionUtils AS %FunctionUtils%;
+    RETURN %FunctionUtils%.Scan(inputDS, z, f, isFromRight := TRUE);
+  ENDMACRO;
+
   /*
     Apply a binary operator to a start value and all elements going left to right.
 
@@ -163,34 +259,11 @@
     Return: B
   */
   EXPORT FoldLeft(inputDS, z, f) := FUNCTIONMACRO
-    LOCAL inputLayout := RECORDOF(inputDS);
-    LOCAL dummyInput := ROW([], inputLayout);
+    #UNIQUENAME(FunctionUtils)
+    IMPORT utils.FunctionUtils AS %FunctionUtils%;
     LOCAL outputLayout := RECORDOF(z);
-    LOCAL dummyOutput := ROW([], outputLayout);
-    LOCAL transformedLayout := {inputLayout current, outputLayout cumulative};
-    LOCAL tranformedInput := PROJECT(
-      inputDS,
-      TRANSFORM(
-        transformedLayout,
-        SELF.current := LEFT,
-        SELF.cumulative := dummyOutput
-      ),
-      LOCAL,
-      ORDERED,
-      STABLE,
-      PARALLEL
-    );
-    LOCAL outputDS := ITERATE(
-      ROW({dummyInput, z}, transformedLayout) + tranformedInput,
-      TRANSFORM(
-        RECORDOF(RIGHT),
-        SELF.cumulative := IF(COUNTER = 1, z, f(LEFT.cumulative, RIGHT.current)),
-        SELF := RIGHT
-      ),
-      ORDERED,
-      STABLE
-    );
-    RETURN outputDS[COUNT(outputDS)].cumulative;
+    LOCAL processOutput := %FunctionUtils%._PrefixScan_(inputDS, z, f, isFromRight := FALSE);
+    RETURN processOutput[COUNT(processOutput)].cumulative;
   ENDMACRO;
   EXPORT FoldLeftValue(inputDS, zVal, f) := FUNCTIONMACRO
     #UNIQUENAME(FunctionUtils)
@@ -223,41 +296,11 @@
     Return: B
   */
   EXPORT FoldRight(inputDS, z, f) := FUNCTIONMACRO
-    LOCAL inputLayout := RECORDOF(inputDS);
-    LOCAL dummyInput := ROW([], inputLayout);
+    #UNIQUENAME(FunctionUtils)
+    IMPORT utils.FunctionUtils AS %FunctionUtils%;
     LOCAL outputLayout := RECORDOF(z);
-    LOCAL dummyOutput := ROW([], outputLayout);
-    LOCAL transformedLayout := {inputLayout current, outputLayout cumulative, UNSIGNED c};
-    LOCAL tranformedInput := PROJECT(
-      inputDS,
-      TRANSFORM(
-        transformedLayout,
-        SELF.current := LEFT,
-        SELF.cumulative := dummyOutput,
-        SELF.c := COUNTER
-      ),
-      LOCAL,
-      ORDERED,
-      STABLE,
-      PARALLEL
-    );
-    LOCAL invInput := SORT(tranformedInput, -c);
-    LOCAL outputDS := PROCESS(
-      invInput,
-      z,
-      TRANSFORM(
-        transformedLayout,
-        SELF.cumulative := f(LEFT.current, RIGHT),
-        SELF := LEFT
-      ),
-      TRANSFORM(
-        outputLayout,
-        SELF := f(LEFT.current, RIGHT)
-      ),
-      ORDERED,
-      STABLE
-    );
-    RETURN IF(EXISTS(inputDS), outputDS[COUNT(outputDS)].cumulative, z);
+    LOCAL processOutput := %FunctionUtils%._PrefixScan_(inputDS, z, f, isFromRight := TRUE);
+    RETURN processOutput[1].cumulative;
   ENDMACRO;
   EXPORT FoldRightValue(inputDS, zVal, f) := FUNCTIONMACRO
     #UNIQUENAME(FunctionUtils)

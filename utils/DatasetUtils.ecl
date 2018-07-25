@@ -22,6 +22,20 @@
   ENDMACRO;
 
   /*
+    Create dataset given the layout, list of fields for inline data, and inline data, fill missing fields with default values.
+  */
+  EXPORT CreateDataset(layout, inlineDataFields, inlineData) := FUNCTIONMACRO
+    #UNIQUENAME(RecordUtils)
+    #UNIQUENAME(DatasetUtils)
+    IMPORT utils.RecordUtils AS %RecordUtils%;
+    IMPORT utils.DatasetUtils AS %DatasetUtils%;
+    LOCAL slimLayout := %RecordUtils%.SlimLayout(layout, inlineDataFields);
+    LOCAL inputDS := DATASET(inlineData, slimLayout);
+    LOCAL outputDS := %DatasetUtils%.TransformDataset(inputDS, layout);
+    RETURN outputDS;
+  ENDMACRO;
+
+  /*
     Transform a dataset to a given layout or inline transform function. In case of layout fill missing fields with default values.
   */
   EXPORT TransformDataset(inputDS, f) := FUNCTIONMACRO
