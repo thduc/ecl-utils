@@ -9,7 +9,7 @@ row1 := ROW({1, 1, 'a'}, rec1);
 row2 := ROW({1, 2, 'b'}, rec1);
 
 ASSERT(m1.ToString(row1, ', ', '[', ']') = '[1, 1, a]', 'ToString should correctly convert record to string.');
-ASSERT(HASH(m1.CopyRecord(row1, intVal2 := 2, stringVal := 'b')) = HASH(row2), 'CopyRecord should correctly copy record fields.');
+ASSERT(HASH(m1.CopyRecord(row1, intVal2 := 2)) = HASH(row2), 'CopyRecord should correctly copy record fields.');
 
 rec2 := RecordUtils.SlimLayout(rec1, ['intVal1', 'stringVal']);
 row3 := ROW({1, 'a'}, rec2);
