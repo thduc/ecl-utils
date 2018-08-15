@@ -2,94 +2,11 @@ Ecl-Utils
 =======
 Utility functions to work with HPCC ECL language.
 
-- [Data generation utilities](#datagenutils)
 - [Dataset utilities](#datasetutils)
 - [Functional programming utilities](#functionutils)
+- ["Random" data generation utilities](#randutils)
 - [Record utilities](#recordutils)
 - [String utilities](#stringutils)
-
----
-## DataGenUtils
-Utility functions for data generation.
-
-* **NextUnsigned()**: Generate random unsigned integer between `0` and `4294967295`.<br/>
-_Example_:
-```
-NextUnsigned() => 3372947314
-```
-
-* **NextDouble()**: Generate random float value between `0` and `1`.<br/>
-_Example_:
-```
-NextDouble() => 0.7770327194074711
-```
-
-* **NextBoolean()**: Generate random boolean value (`true` or `false`).<br/>
-_Example_:
-```
-NextBoolean() => true
-```
-
-* **NextString(len, charsets)**: Generate random string of the given length from given characters set.
-  * **len**: length of the string.
-  * **charsets**: set of characters, default is alphanumeric characters.<br/>
-_Example_:
-```
-NextString(5) => 'B4ek0'
-```
-
-* **CreateHelperModuleForRandomNumericalValue(end1, end2)**: create a helper (utility) module to generate random integer or float between `end1` and `end2`. Module created has the following functions:
-  * **NextInt()**: generate random integer between `end1` and `end2`.
-  * **NextDouble()**: generate random double between `end1` and `end2`. <br/>
-_Example_:
-```
-mod1 := DataGenUtils.CreateHelperModuleForRandomNumericalValue(-9, 9);
-mod1.NextInt() => -5
-mod1.NextInt() => 3
-mod1.NextDouble() => -6.673056039417409
-mod1.NextDouble() =>  1.943924376960826
-```
-
-* **CreateHelperModuleForRandomString(stringLength, characterSets)**: Generate random string of the given length from given characters set.
-  * **stringLength**: length of the string.
-  * **characterSets**: set of characters, default is alphanumeric characters.
-
-Module created has the following functions:
-* **NextString(len, charsets)**: Generate random string of the given length from given characters set.
-  * **len**: length of the string, default is `stringLength`.
-  * **charsets**: set of characters, default is `characterSets`.<br/>
-_Example_:
-```
-mod3 := DataGenUtils.CreateHelperModuleForRandomString(5);
-mod3.NextString() => 'Vzbey'
-mod3.NextString() => 'tHgaS'
-```
-Following is an example generates dataset
-```
-m1 := DataGenUtils.CreateHelperModuleForRandomNumericalValue(-10, 10);
-m2 := DataGenUtils.CreateHelperModuleForRandomNumericalValue(1, 10);
-m3 := DataGenUtils.CreateHelperModuleForRandomString(5);
-
-Rec := {INTEGER intVal, BOOLEAN boolVal, STRING stringVal};
-ds := DATASET(
-  5,
-  TRANSFORM(
-    Rec,
-    SELF.intVal := m1.NextInt(), // random int between -10 and 10
-    SELF.boolVal := DataGenUtils.NextBoolean(), // random boolean
-    SELF.stringVal := m3.NextString(m2.NextInt()) // random length (1 to 10) string
-  )
-)
-OUTPUT(ds) =>
-
-| intval | boolval | stringval |
-|--------|---------|-----------|
-| 5      | TRUE    | FvXK      |
-| 1      | TRUE    | qWCbz5    |
-| -6     | FALSE   | JlFOGAW   |
-| 2      | FALSE   | KvKXkix   |
-| 0      | TRUE    | 6diUesh   |
-```
 
 ---
 ## DatasetUtils
@@ -410,6 +327,95 @@ _Example_:
 ```
 folder3(IntRec1 r, INTEGER i) := r.value + i;
 FunctionUtils.FoldRightValue(intDS1, 0, folder3) => 45
+```
+
+---
+## RandUtils
+Utility functions for "random" data generation.
+
+* **NextUnsigned()**: Generate random unsigned integer between `0` and `4294967295`.<br/>
+_Example_:
+```
+NextUnsigned() => 3372947314
+```
+
+* **NextDouble()**: Generate random float value between `0` and `1`.<br/>
+_Example_:
+```
+NextDouble() => 0.7770327194074711
+```
+
+* **NextBoolean()**: Generate random boolean value (`true` or `false`).<br/>
+_Example_:
+```
+NextBoolean() => true
+```
+
+* **NextString(len, charsets)**: Generate random string of the given length from given characters set.
+  * **len**: length of the string.
+  * **charsets**: set of characters, default is alphanumeric characters.<br/>
+_Example_:
+```
+NextString(5) => 'B4ek0'
+```
+
+* **NextUUID()**: Generate random string in [UUID format](https://en.wikipedia.org/wiki/Universally_unique_identifier).
+_Example_:
+```
+NextUUID() => 'ef75b0e5-874d-4f59-d574-1a079e4e79e8'
+```
+
+* **CreateHelperModuleForRandomNumericalValue(end1, end2)**: create a helper (utility) module to generate random integer or float between `end1` and `end2`. Module created has the following functions:
+  * **NextInt()**: generate random integer between `end1` and `end2`.
+  * **NextDouble()**: generate random double between `end1` and `end2`. <br/>
+_Example_:
+```
+mod1 := RandUtils.CreateHelperModuleForRandomNumericalValue(-9, 9);
+mod1.NextInt() => -5
+mod1.NextInt() => 3
+mod1.NextDouble() => -6.673056039417409
+mod1.NextDouble() =>  1.943924376960826
+```
+
+* **CreateHelperModuleForRandomString(stringLength, characterSets)**: Generate random string of the given length from given characters set.
+  * **stringLength**: length of the string.
+  * **characterSets**: set of characters, default is alphanumeric characters.
+
+Module created has the following functions:
+* **NextString(len, charsets)**: Generate random string of the given length from given characters set.
+  * **len**: length of the string, default is `stringLength`.
+  * **charsets**: set of characters, default is `characterSets`.<br/>
+_Example_:
+```
+mod3 := RandUtils.CreateHelperModuleForRandomString(5);
+mod3.NextString() => 'Vzbey'
+mod3.NextString() => 'tHgaS'
+```
+Following is an example generates dataset
+```
+m1 := RandUtils.CreateHelperModuleForRandomNumericalValue(-10, 10);
+m2 := RandUtils.CreateHelperModuleForRandomNumericalValue(1, 10);
+m3 := RandUtils.CreateHelperModuleForRandomString(5);
+
+Rec := {INTEGER intVal, BOOLEAN boolVal, STRING stringVal};
+ds := DATASET(
+  5,
+  TRANSFORM(
+    Rec,
+    SELF.intVal := m1.NextInt(), // random int between -10 and 10
+    SELF.boolVal := DataGenUtils.NextBoolean(), // random boolean
+    SELF.stringVal := m3.NextString(m2.NextInt()) // random length (1 to 10) string
+  )
+)
+OUTPUT(ds) =>
+
+| intval | boolval | stringval |
+|--------|---------|-----------|
+| 5      | TRUE    | FvXK      |
+| 1      | TRUE    | qWCbz5    |
+| -6     | FALSE   | JlFOGAW   |
+| 2      | FALSE   | KvKXkix   |
+| 0      | TRUE    | 6diUesh   |
 ```
 
 ---
