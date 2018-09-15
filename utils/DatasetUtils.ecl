@@ -44,7 +44,7 @@
     #IF(REGEXFIND('^\\s*transform\\s*\\(.+\\)\\s*$', #TEXT(f), NOCASE))
       #SET(hasTransformer, TRUE)
     #ELSE
-      LOCAL f transformerFunc(RECORDOF(inputDS) input) := TRANSFORM
+      LOCAL TYPEOF(f) transformerFunc(RECORDOF(inputDS) input) := TRANSFORM
         SELF := input;
         SELF := [];
       END;

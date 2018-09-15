@@ -4,10 +4,46 @@
 IMPORT Std.Str;
 IMPORT utils.FunctionUtils;
 
+// Sets
+SET OF STRING setOfStrings1 := ['a', '1', 'b', '2', 'c', '3', 'd', '4', 'e', '5'];
+isDigit(STRING s) := ('0' <= s) AND (s <= '9');
+combineIntAndString(INTEGER i, STRING s) := (STRING)i + s;
+combineStringAndInt2Int(STRING s, INTEGER i) := (INTEGER)s + i;
+combineStringAndInt2String(STRING s, INTEGER i) := s + (STRING)i;
+string2Int(STRING s) := (INTEGER)s;
+int2String(INTEGER i) := (STRING)i;
+sumInts(INTEGER x, INTEGER y) :=  x + y;
+stringConcats(STRING s1, STRING s2) := s1 + s2;
+
+SET OF STRING setOfDigits1 := FunctionUtils.FilterSet(setOfStrings1, isDigit);
+SET OF INTEGER setOfInts1 := FunctionUtils.MapSet(setOfDigits1, string2Int);
+SET OF STRING setOfDigits2 := FunctionUtils.MapSet(setOfInts1, int2String);
+STRING stringConcats1 := FunctionUtils.ReduceSet(setOfStrings1, stringConcats);
+INTEGER sumInts1 := FunctionUtils.ReduceSet(setOfInts1, sumInts);
+STRING aggregateInts1 := FunctionUtils.AggregateSet(setOfInts1, (STRING)'Digit', combineIntAndString, stringConcats);
+INTEGER aggregateStrings1 := FunctionUtils.AggregateSet(setOfDigits1, 10, combineStringAndInt2Int, sumInts);
+SET OF STRING scanLeftInts1 := FunctionUtils.ScanLeftSet(setOfInts1, (STRING)'Number', combineStringAndInt2String);
+SET OF STRING scanRightInts1 := FunctionUtils.ScanRightSet(setOfInts1, (STRING)'Number', combineIntAndString);
+STRING foldLeftDigits1 := FunctionUtils.FoldLeftSet(setOfDigits1, (STRING)'Digits', stringConcats);
+STRING foldRightDigits1 := FunctionUtils.FoldRightSet(setOfDigits1, (STRING)'Digits', stringConcats);
+OUTPUT(setOfStrings1, NAMED('SetOfStrings1'));
+OUTPUT(setOfDigits1, NAMED('SetOfDigitsOnly'));
+OUTPUT(setOfInts1, NAMED('SetOfInts'));
+OUTPUT(setOfDigits2, NAMED('SetOfDigitsMappedFromSetOfInts'));
+OUTPUT(stringConcats1, NAMED('ConcatsSetOfStrings'));
+OUTPUT(sumInts1, NAMED('SumOfSetOfInts'));
+OUTPUT(aggregateInts1, NAMED('AggregateSetOfInts2String'));
+OUTPUT(aggregateStrings1, NAMED('AggregateSetOfStrings2Int'));
+OUTPUT(scanLeftInts1, NAMED('ScanLeftSetOfInts2String'));
+OUTPUT(scanRightInts1, NAMED('ScanRightSetOfInts2String'));
+OUTPUT(foldLeftDigits1, NAMED('FoldLeftSetOfDigits2String'));
+OUTPUT(foldRightDigits1, NAMED('FoldRightSetOfDigits2String'));
+
+
+// Datasets
 IntRec1 := {INTEGER value};
 intDS1 := DATASET([{1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}], IntRec1);
 IntStrRec1 := {INTEGER intVal1, INTEGER intVal2, STRING strVal};
-
 
 BOOLEAN predicate1(IntRec1 x) := x.value & 0x01 = 0;
 filteredDS1 := FunctionUtils.Filter(intDS1, predicate1);

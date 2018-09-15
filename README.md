@@ -75,7 +75,11 @@ TransformDataset(ds1, TRANSFORM(rec4, SELF := LEFT, SELF := [])) =>
 
 ---
 ## FunctionUtils
-Functional programming utilities.
+Functional programming utilities. There exists functions for dataset and set. The functions for set can be obtained from corresponding functions for dataset plus suffix `Set`.
+
+_Example_: Function to filter dataset is `Filter`, function to filter set is `FilterSet`.
+
+Following are documentation for functions for dataset. 
 
 ```
 IntRec1 := {INTEGER value};
