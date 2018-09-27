@@ -4,53 +4,23 @@
     Join set of strings into a string
   */
   EXPORT JoinSetOfStrings(stringSet, elementPrefix, elementPostfix, opCombine) := FUNCTIONMACRO
-    #UNIQUENAME(idx)
-    #UNIQUENAME(size)
-    #UNIQUENAME(value)
-    #SET(idx, 1)
-    #SET(size, COUNT(stringSet))
-    #SET(value, '')
-
-    #LOOP
-      #IF(%idx% > %size%)
-        #BREAK
-      #ELSE
-        #IF(%idx% > 1)
-          #APPEND(value, opCombine)
-        #END
-        #APPEND(value, elementPrefix + stringSet[%idx%] + elementPostfix)
-      #END
-      #SET(idx, %idx% + 1)
-    #END
-    RETURN %'value'%;
+    #UNIQUENAME(FunctionUtils)
+    IMPORT utils.FunctionUtils AS %FunctionUtils%;
+    LOCAL m(STRING input) := (STRING)elementPrefix + input + elementPostfix;
+    LOCAL f(STRING input1, STRING input2) := input1 + opCombine + input2;
+    LOCAL stringSetMapped := %FunctionUtils%.MapSet(stringSet, m);
+    RETURN %FunctionUtils%.ReduceSet(stringSetMapped, f); 
   ENDMACRO;
 
   /*
     Join two sets of strings into a string
   */
   EXPORT JoinTwoSetsOfStrings(leftSet, rightSet, prefixLeft, prefixRight, postfixLeft, postfixRight, opElement, opCombine) := FUNCTIONMACRO
-    #UNIQUENAME(idx)
-    #UNIQUENAME(size)
-    #UNIQUENAME(value)
-    #SET(idx, 1)
-    #SET(size, COUNT(leftSet))
-    #IF(%size% > COUNT(rightSet))
-      #SET(size, COUNT(rightSet))
-    #END
-    #SET(value, '')
-
-    #LOOP
-      #IF(%idx% > %size%)
-        #BREAK
-      #ELSE
-        #IF(%idx% > 1)
-          #APPEND(value, opCombine)
-        #END
-        #APPEND(value, prefixLeft + leftSet[%idx%] + postfixLeft + opElement + prefixRight + rightSet[%idx%] + postfixRight)
-      #END
-      #SET(idx, %idx% + 1)
-    #END
-    RETURN %'value'%;
+    #UNIQUENAME(FunctionUtils)
+    IMPORT utils.FunctionUtils AS %FunctionUtils%;
+    LOCAL m(STRING l, STRING r, STRING z) := ((STRING)prefixLeft + l + postfixLeft) + opElement + ((STRING)prefixRight + r + postfixRight);
+    LOCAL f(STRING input1, STRING input2) := input1 + opCombine + input2;
+    RETURN %FunctionUtils%.Aggregate2Sets(leftSet, rightSet, (STRING)'', m, f); 
   ENDMACRO;
 
 END;

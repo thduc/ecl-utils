@@ -139,6 +139,12 @@
       EXPORT STRING ToString(layout intputRow, STRING fieldDelimiter = ', ', STRING recordOpening = '(', STRING recordClosing = ')') := FUNCTION
         RETURN #EXPAND(%'toStringExpr'% + ';')
       END;
+
+      /*
+        Convert input row (record) to json string.
+      */
+      EXPORT STRING ToJson(layout inputRow) := '{' + (STRING)TOJSON(inputRow) + '}';
+
       /*
         Create a copy of row (record) with optional input fields/attributes.
       */

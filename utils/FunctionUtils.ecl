@@ -98,6 +98,121 @@
   ENDMACRO;
 
   /*
+    Map (transform) two sets of type A and type B to type C.
+    Given: set1[A]
+           set2[B]
+           f: (A, B) -> C
+           f is binary function.
+    Return: set[C]
+  */
+  EXPORT Map2Sets(inputSet1, inputSet2, f) := FUNCTIONMACRO
+    #UNIQUENAME(StdStr)
+    IMPORT STD.Str AS %StdStr%;
+
+    #UNIQUENAME(idx)
+    #UNIQUENAME(size)
+    #UNIQUENAME(value)
+    #UNIQUENAME(stype1)
+    #UNIQUENAME(dtype1)
+    #UNIQUENAME(stype2)
+    #UNIQUENAME(dtype2)
+    #UNIQUENAME(ttype)
+    #UNIQUENAME(isStringSet)
+
+    #SET(stype1, #GETDATATYPE(inputSet1))
+    #SET(dtype1, %'stype1'%[8..])
+    #SET(stype2, #GETDATATYPE(inputSet2))
+    #SET(dtype2, %'stype2'%[8..])
+    #SET(ttype, #GETDATATYPE(f((%dtype1%)'', (%dtype2%)'')))
+
+    #SET(isStringSet, 0)
+    #IF(%StdStr%.StartsWith(%'ttype'%, 'string'))
+      #SET(isStringSet, 1)
+    #END
+
+    #SET(idx, 1)
+    #SET(size, MIN(COUNT(inputSet1), COUNT(inputSet2)))
+    #SET(value, '[')
+    #LOOP
+      #IF(%idx% > %size%)
+        #BREAK
+      #END
+      #IF(%'value'% != '[')
+        #APPEND(value, ', ')
+      #END
+      #IF(%isStringSet% = 1)
+        #APPEND(value, '\'' + f(inputSet1[%idx%], inputSet2[%idx%]) + '\'')
+      #ELSE
+        #APPEND(value, f(inputSet1[%idx%], inputSet2[%idx%]))
+      #END
+      #SET(idx, %idx% + 1)
+    #END
+    #APPEND(value, ']')
+    LOCAL #EXPAND('set of ' + %'ttype'%) outputSet := %value%;
+    RETURN outputSet;
+  ENDMACRO;
+
+  /*
+    Map (transform) three sets of type A, type B, and type C to type D.
+    Given: set1[A]
+           set2[B]
+           set3[C]
+           f: (A, B, C) -> D
+           f is ternary function.
+    Return: set[D]
+  */
+  EXPORT Map3Sets(inputSet1, inputSet2, inputSet3, f) := FUNCTIONMACRO
+    #UNIQUENAME(StdStr)
+    IMPORT STD.Str AS %StdStr%;
+
+    #UNIQUENAME(idx)
+    #UNIQUENAME(size)
+    #UNIQUENAME(value)
+    #UNIQUENAME(stype1)
+    #UNIQUENAME(dtype1)
+    #UNIQUENAME(stype2)
+    #UNIQUENAME(dtype2)
+    #UNIQUENAME(stype3)
+    #UNIQUENAME(dtype3)
+    #UNIQUENAME(ttype)
+    #UNIQUENAME(isStringSet)
+
+    #SET(stype1, #GETDATATYPE(inputSet1))
+    #SET(dtype1, %'stype1'%[8..])
+    #SET(stype2, #GETDATATYPE(inputSet2))
+    #SET(dtype2, %'stype2'%[8..])
+    #SET(stype3, #GETDATATYPE(inputSet3))
+    #SET(dtype3, %'stype3'%[8..])
+    #SET(ttype, #GETDATATYPE(f((%dtype1%)'', (%dtype2%)'', (%dtype3%)'')))
+
+    #SET(isStringSet, 0)
+    #IF(%StdStr%.StartsWith(%'ttype'%, 'string'))
+      #SET(isStringSet, 1)
+    #END
+
+    #SET(idx, 1)
+    #SET(size, MIN(COUNT(inputSet1), COUNT(inputSet2), COUNT(inputSet3)))
+    #SET(value, '[')
+    #LOOP
+      #IF(%idx% > %size%)
+        #BREAK
+      #END
+      #IF(%'value'% != '[')
+        #APPEND(value, ', ')
+      #END
+      #IF(%isStringSet% = 1)
+        #APPEND(value, '\'' + f(inputSet1[%idx%], inputSet2[%idx%], inputSet3[%idx%]) + '\'')
+      #ELSE
+        #APPEND(value, f(inputSet1[%idx%], inputSet2[%idx%], inputSet3[%idx%]))
+      #END
+      #SET(idx, %idx% + 1)
+    #END
+    #APPEND(value, ']')
+    LOCAL #EXPAND('set of ' + %'ttype'%) outputSet := %value%;
+    RETURN outputSet;
+  ENDMACRO;
+
+  /*
     Reduce the set (from left to right) to an element using the specified associative binary operator.
     Given: set[A]
            f: (A, A) -> A
@@ -177,6 +292,75 @@
 
     LOCAL g(%dtype% input) := m(input, z);
     LOCAL mappedSet := %FunctionUtils%.MapSet(inputSet, g);
+    LOCAL %ttype% reducedResult := %FunctionUtils%.ReduceSet(mappedSet, f);
+    RETURN reducedResult;
+  ENDMACRO;
+
+  /*
+    Aggregate the results of applying an operator to subsequent elements.
+    Given: set1[A]
+           set2[B]
+           z[C]
+           m: (A, B, C) -> C
+           f: (C, C) -> C
+           m and f are functions
+    Return: C
+  */
+  EXPORT Aggregate2Sets(inputSet1, inputSet2, z, m, f) := FUNCTIONMACRO
+    #UNIQUENAME(FunctionUtils)
+    IMPORT utils.FunctionUtils AS %FunctionUtils%;
+
+    #UNIQUENAME(stype1)
+    #UNIQUENAME(dtype1)
+    #UNIQUENAME(stype2)
+    #UNIQUENAME(dtype2)
+    #UNIQUENAME(ttype)
+
+    #SET(stype1, #GETDATATYPE(inputSet1))
+    #SET(dtype1, %'stype1'%[8..])
+    #SET(stype2, #GETDATATYPE(inputSet2))
+    #SET(dtype2, %'stype2'%[8..])
+    #SET(ttype, #GETDATATYPE(z))
+
+    LOCAL g(%dtype1% input1, %dtype2% input2) := m(input1, input2, z);
+    LOCAL mappedSet := %FunctionUtils%.Map2Sets(inputSet1, inputSet2, g);
+    LOCAL %ttype% reducedResult := %FunctionUtils%.ReduceSet(mappedSet, f);
+    RETURN reducedResult;
+  ENDMACRO;
+
+  /*
+    Aggregate the results of applying an operator to subsequent elements.
+    Given: set1[A]
+           set2[B]
+           set3[C]
+           z[D]
+           m: (A, B, C, D) -> D
+           f: (D, D) -> D
+           m and f are functions
+    Return: D
+  */
+  EXPORT Aggregate3Sets(inputSet1, inputSet2, inputSet3, z, m, f) := FUNCTIONMACRO
+    #UNIQUENAME(FunctionUtils)
+    IMPORT utils.FunctionUtils AS %FunctionUtils%;
+
+    #UNIQUENAME(stype1)
+    #UNIQUENAME(dtype1)
+    #UNIQUENAME(stype2)
+    #UNIQUENAME(dtype2)
+    #UNIQUENAME(stype3)
+    #UNIQUENAME(dtype3)
+    #UNIQUENAME(ttype)
+
+    #SET(stype1, #GETDATATYPE(inputSet1))
+    #SET(dtype1, %'stype1'%[8..])
+    #SET(stype2, #GETDATATYPE(inputSet2))
+    #SET(dtype2, %'stype2'%[8..])
+    #SET(stype3, #GETDATATYPE(inputSet3))
+    #SET(dtype3, %'stype3'%[8..])
+    #SET(ttype, #GETDATATYPE(z))
+
+    LOCAL g(%dtype1% input1, %dtype2% input2, %dtype3% input3) := m(input1, input2, input3, z);
+    LOCAL mappedSet := %FunctionUtils%.Map3Sets(inputSet1, inputSet2, inputSet3, g);
     LOCAL %ttype% reducedResult := %FunctionUtils%.ReduceSet(mappedSet, f);
     RETURN reducedResult;
   ENDMACRO;
