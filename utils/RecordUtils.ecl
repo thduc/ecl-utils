@@ -165,7 +165,7 @@
   /*
     Create slim layout with only given fields.
   */
-  EXPORT SlimLayout(layout, fields2Keep) := FUNCTIONMACRO
+  EXPORT SlimLayout(fields2Keep, layout) := FUNCTIONMACRO
     #UNIQUENAME(StringUtils)
     IMPORT utils.StringUtils AS %StringUtils%;
     LOCAL LayoutWithfields2Keep := {
@@ -188,7 +188,7 @@
   /*
     Transform a record to a given layout, missing fields get default values.
   */
-  EXPORT TransformRecord(inputRow, layout) := FUNCTIONMACRO
+  EXPORT TransformRecord(layout, inputRow) := FUNCTIONMACRO
     RETURN ROW(
       inputRow,
       TRANSFORM(

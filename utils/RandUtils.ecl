@@ -10,7 +10,8 @@ EXPORT RandUtils := MODULE
   EXPORT STRING LOWER_LETTERS := 'abcdefghijklmnopqrstuvwxyz';
   EXPORT STRING UPPER_LETTERS := Str.ToUpperCase(LOWER_LETTERS);
   EXPORT STRING LETTERS := UPPER_LETTERS + LOWER_LETTERS;
-  EXPORT STRING ALPHA := DIGITS + LETTERS;
+  EXPORT STRING ALPHA := LETTERS;
+  EXPORT STRING ALNUM := ALPHA + DIGITS;
 
   EXPORT STRING NilUUID := '00000000-0000-0000-0000-000000000000';
 
@@ -38,7 +39,7 @@ EXPORT RandUtils := MODULE
   /*
     Generate random string of given length from a given characters set.
   */
-  EXPORT STRING NextString(UNSIGNED len, STRING charsets = ALPHA) := BEGINC++
+  EXPORT STRING NextString(UNSIGNED len, STRING charsets = ALNUM) := BEGINC++
     #option action
     #include <pthread.h>
     #include <stdlib.h>
@@ -110,7 +111,7 @@ EXPORT RandUtils := MODULE
   /*
     Create module for random strings of given length from predefined characters set.
   */
-  EXPORT CreateHelperModuleForRandomString(UNSIGNED stringLength, STRING characterSets = ALPHA) := FUNCTION
+  EXPORT CreateHelperModuleForRandomString(UNSIGNED stringLength, STRING characterSets = ALNUM) := FUNCTION
     Mod := MODULE
       /*
         Generate random string of given length from a given characters set.

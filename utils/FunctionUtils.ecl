@@ -2,11 +2,13 @@
 
   /*
     Filter set, return set of items satisfying a given predicate.
-    Given: set[A]
-           p: A -> Boolean
-    Return: set[A] such that p(A) = True
+    Given: 
+      p: A -> Boolean (function).
+      set[A]
+    Return:
+      set[A] such that p(A) = True
   */
-  EXPORT FilterSet(inputSet, p) := FUNCTIONMACRO
+  EXPORT FilterSet(p, inputSet) := FUNCTIONMACRO
     #UNIQUENAME(StdStr)
     IMPORT STD.Str AS %StdStr%;
 
@@ -49,12 +51,13 @@
 
   /*
     Map (transform) set of type A to type B.
-    Given: set[A]
-           f: A -> B
-           f is function.
-    Return: set[B]
+    Given: 
+      f: A -> B (function).
+      set[A]
+    Return:
+      set[B]
   */
-  EXPORT MapSet(inputSet, f) := FUNCTIONMACRO
+  EXPORT MapSet(f, inputSet) := FUNCTIONMACRO
     #UNIQUENAME(StdStr)
     IMPORT STD.Str AS %StdStr%;
 
@@ -99,13 +102,14 @@
 
   /*
     Map (transform) two sets of type A and type B to type C.
-    Given: set1[A]
-           set2[B]
-           f: (A, B) -> C
-           f is binary function.
-    Return: set[C]
+    Given: 
+      f: (A, B) -> C (binary function).
+      set1[A]
+      set2[B]
+    Return:
+      set[C]
   */
-  EXPORT Map2Sets(inputSet1, inputSet2, f) := FUNCTIONMACRO
+  EXPORT Map2Sets(f, inputSet1, inputSet2) := FUNCTIONMACRO
     #UNIQUENAME(StdStr)
     IMPORT STD.Str AS %StdStr%;
 
@@ -154,14 +158,15 @@
 
   /*
     Map (transform) three sets of type A, type B, and type C to type D.
-    Given: set1[A]
-           set2[B]
-           set3[C]
-           f: (A, B, C) -> D
-           f is ternary function.
-    Return: set[D]
+    Given: 
+      f: (A, B, C) -> D (ternary function).
+      set1[A]
+      set2[B]
+      set3[C]
+    Return:
+      set[D]
   */
-  EXPORT Map3Sets(inputSet1, inputSet2, inputSet3, f) := FUNCTIONMACRO
+  EXPORT Map3Sets(f, inputSet1, inputSet2, inputSet3) := FUNCTIONMACRO
     #UNIQUENAME(StdStr)
     IMPORT STD.Str AS %StdStr%;
 
@@ -214,11 +219,13 @@
 
   /*
     Reduce the set (from left to right) to an element using the specified associative binary operator.
-    Given: set[A]
-           f: (A, A) -> A
-    Return: A
+    Given: 
+      f: (A, A) -> A
+      set[A]
+    Return:
+      A
   */
-  EXPORT ReduceSet(inputSet, f) := FUNCTIONMACRO
+  EXPORT ReduceSet(f, inputSet) := FUNCTIONMACRO
     #UNIQUENAME(StdStr)
     IMPORT STD.Str AS %StdStr%;
 
@@ -271,14 +278,16 @@
 
   /*
     Aggregate the results of applying an operator to subsequent elements.
-    Given: set[A]
-           z[B]
-           m: (A, B) -> B
-           f: (B, B) -> B
-           m and f are functions
-    Return: B
+    Given: 
+      f: (B, B) -> B
+      m: (A, B) -> B
+        m and f are functions
+      z[B]
+      set[A]
+    Return:
+      B
   */
-  EXPORT AggregateSet(inputSet, z, m, f) := FUNCTIONMACRO
+  EXPORT AggregateSet(f, m, z, inputSet) := FUNCTIONMACRO
     #UNIQUENAME(FunctionUtils)
     IMPORT utils.FunctionUtils AS %FunctionUtils%;
 
@@ -291,22 +300,24 @@
     #SET(ttype, #GETDATATYPE(z))
 
     LOCAL g(%dtype% input) := m(input, z);
-    LOCAL mappedSet := %FunctionUtils%.MapSet(inputSet, g);
-    LOCAL %ttype% reducedResult := %FunctionUtils%.ReduceSet(mappedSet, f);
+    LOCAL mappedSet := %FunctionUtils%.MapSet(g, inputSet);
+    LOCAL %ttype% reducedResult := %FunctionUtils%.ReduceSet(f, mappedSet);
     RETURN reducedResult;
   ENDMACRO;
 
   /*
     Aggregate the results of applying an operator to subsequent elements.
-    Given: set1[A]
-           set2[B]
-           z[C]
-           m: (A, B, C) -> C
-           f: (C, C) -> C
-           m and f are functions
-    Return: C
+    Given: 
+      f: (C, C) -> C
+      m: (A, B, C) -> C
+        m and f are functions
+      z[C]
+      set1[A]
+      set2[B]
+    Return:
+      C
   */
-  EXPORT Aggregate2Sets(inputSet1, inputSet2, z, m, f) := FUNCTIONMACRO
+  EXPORT Aggregate2Sets(f, m, z, inputSet1, inputSet2) := FUNCTIONMACRO
     #UNIQUENAME(FunctionUtils)
     IMPORT utils.FunctionUtils AS %FunctionUtils%;
 
@@ -323,23 +334,25 @@
     #SET(ttype, #GETDATATYPE(z))
 
     LOCAL g(%dtype1% input1, %dtype2% input2) := m(input1, input2, z);
-    LOCAL mappedSet := %FunctionUtils%.Map2Sets(inputSet1, inputSet2, g);
-    LOCAL %ttype% reducedResult := %FunctionUtils%.ReduceSet(mappedSet, f);
+    LOCAL mappedSet := %FunctionUtils%.Map2Sets(g, inputSet1, inputSet2);
+    LOCAL %ttype% reducedResult := %FunctionUtils%.ReduceSet(f, mappedSet);
     RETURN reducedResult;
   ENDMACRO;
 
   /*
     Aggregate the results of applying an operator to subsequent elements.
-    Given: set1[A]
-           set2[B]
-           set3[C]
-           z[D]
-           m: (A, B, C, D) -> D
-           f: (D, D) -> D
-           m and f are functions
-    Return: D
+    Given: 
+      f: (D, D) -> D
+      m: (A, B, C, D) -> D
+        m and f are functions
+      z[D]
+      set1[A]
+      set2[B]
+      set3[C]
+    Return:
+      D
   */
-  EXPORT Aggregate3Sets(inputSet1, inputSet2, inputSet3, z, m, f) := FUNCTIONMACRO
+  EXPORT Aggregate3Sets(f, m, z, inputSet1, inputSet2, inputSet3) := FUNCTIONMACRO
     #UNIQUENAME(FunctionUtils)
     IMPORT utils.FunctionUtils AS %FunctionUtils%;
 
@@ -360,20 +373,22 @@
     #SET(ttype, #GETDATATYPE(z))
 
     LOCAL g(%dtype1% input1, %dtype2% input2, %dtype3% input3) := m(input1, input2, input3, z);
-    LOCAL mappedSet := %FunctionUtils%.Map3Sets(inputSet1, inputSet2, inputSet3, g);
-    LOCAL %ttype% reducedResult := %FunctionUtils%.ReduceSet(mappedSet, f);
+    LOCAL mappedSet := %FunctionUtils%.Map3Sets(g, inputSet1, inputSet2, inputSet3);
+    LOCAL %ttype% reducedResult := %FunctionUtils%.ReduceSet(f, mappedSet);
     RETURN reducedResult;
   ENDMACRO;
 
   /*
     Produce a set containing cumulative results of applying the operator going left to right or right to left.
-    Given: set[A]
-           z[B]
-           f: (B, A) -> B (from left to right) or (A, B) -> B (from right to left).
-           isFromRight: optional, scan from right -> left or left -> right, default left -> right.
-    Return: set[B]
+    Given: 
+      f: (B, A) -> B (from left to right) or (A, B) -> B (from right to left).
+      z[B]
+      set[A]
+      isFromRight: optional, scan from right -> left or left -> right, default left -> right.
+    Return:
+      set[B]
   */
-  EXPORT ScanSet(inputSet, z, f, isFromRight = FALSE) := FUNCTIONMACRO
+  EXPORT ScanSet(f, z, inputSet, isFromRight = FALSE) := FUNCTIONMACRO
     #UNIQUENAME(StdStr)
     IMPORT STD.Str AS %StdStr%;
 
@@ -474,66 +489,76 @@
 
   /*
     Produce a set containing cumulative results of applying the operator going left to right.
-    Given: set[A]
-           z[B]
-           f: (B, A) -> B
-    Return: set[B]
+    Given: 
+      f: (B, A) -> B
+      z[B]
+      set[A]
+    Return:
+      set[B]
   */
-  EXPORT ScanLeftSet(inputSet, z, f) := FUNCTIONMACRO
+  EXPORT ScanLeftSet(f, z, inputSet) := FUNCTIONMACRO
     #UNIQUENAME(FunctionUtils)
     IMPORT utils.FunctionUtils AS %FunctionUtils%;
-    RETURN %FunctionUtils%.ScanSet(inputSet, z, f, isFromRight := FALSE);
+    RETURN %FunctionUtils%.ScanSet(f, z, inputSet, isFromRight := FALSE);
   ENDMACRO;
 
   /*
     Produce a set containing cumulative results of applying the operator going right to left.
-    Given: set[A]
-           z[B]
-           f: (A, B) -> B
-    Return: set[B]
+    Given: 
+      f: (A, B) -> B
+      z[B]
+      set[A]
+    Return:
+      set[B]
   */
-  EXPORT ScanRightSet(inputSet, z, f) := FUNCTIONMACRO
+  EXPORT ScanRightSet(f, z, inputSet) := FUNCTIONMACRO
     #UNIQUENAME(FunctionUtils)
     IMPORT utils.FunctionUtils AS %FunctionUtils%;
-    RETURN %FunctionUtils%.ScanSet(inputSet, z, f, isFromRight := TRUE);
+    RETURN %FunctionUtils%.ScanSet(f, z, inputSet, isFromRight := TRUE);
   ENDMACRO;
 
   /*
     Apply a binary operator to a start value and all elements going left to right.
-    Given: set[A]
-           z[B]
-           f: (B, A) -> B
-    Return: B
+    Given: 
+      f: (B, A) -> B
+      z[B]
+      set[A]
+    Return: 
+      B
   */
-  EXPORT FoldLeftSet(inputSet, z, f) := FUNCTIONMACRO
+  EXPORT FoldLeftSet(f, z, inputSet) := FUNCTIONMACRO
     #UNIQUENAME(FunctionUtils)
     IMPORT utils.FunctionUtils AS %FunctionUtils%;
-    LOCAL outputSet := %FunctionUtils%.ScanLeftSet(inputSet, z, f);
+    LOCAL outputSet := %FunctionUtils%.ScanLeftSet(f, z, inputSet);
     LOCAL numberOfInputs := COUNT(inputSet);
     RETURN IF(COUNT(inputSet) > 0, outputSet[numberOfInputs], z);
   ENDMACRO;
 
   /*
     Apply a binary operator to a start value and all elements going right to left.
-    Given: set[A]
-           z[B]
-           f: (A, B) -> B
-    Return: B
+    Given: 
+      f: (A, B) -> B
+      z[B]
+      set[A]
+    Return: 
+      B
   */
-  EXPORT FoldRightSet(inputSet, z, f) := FUNCTIONMACRO
+  EXPORT FoldRightSet(f, z, inputSet) := FUNCTIONMACRO
     #UNIQUENAME(FunctionUtils)
     IMPORT utils.FunctionUtils AS %FunctionUtils%;
-    LOCAL outputSet := %FunctionUtils%.ScanRightSet(inputSet, z, f);
+    LOCAL outputSet := %FunctionUtils%.ScanRightSet(f, z, inputSet);
     RETURN IF(COUNT(inputSet) > 0, outputSet[1], z);
   ENDMACRO;
 
   /*
     Filter dataset, return rows satisfying a given predicate.
-    Given: ds[A]
-           p: A -> Boolean
-    Return: ds[A] such that p(A) = True
+    Given: 
+      p: A -> Boolean
+      ds[A]
+    Return: 
+      ds[A] such that p(A) = True
   */
-  EXPORT Filter(inputDS, p) := FUNCTIONMACRO
+  EXPORT Filter(p, inputDS) := FUNCTIONMACRO
     LOCAL outputDS := PROJECT(
       inputDS,
       TRANSFORM(
@@ -551,12 +576,14 @@
 
   /*
     Map (transform) dataset of type A to type B.
-    Given: ds[A]
-           f: A -> B
-           f is either function or inline transform function.
-    Return: ds[B]
+    Given: 
+      f: A -> B
+        f is either function or inline transform function.
+      ds[A]
+    Return:
+      ds[B]
   */
-  EXPORT Map(inputDS, f) := FUNCTIONMACRO
+  EXPORT Map(f, inputDS) := FUNCTIONMACRO
     #UNIQUENAME(hasTransformer)
     #SET(hasTransformer, FALSE)
     #IF(REGEXFIND('^\\s*transform\\s*\\(.+\\)\\s*$', #TEXT(f), NOCASE))
@@ -584,12 +611,14 @@
 
   /*
     Reduce the dataset to an element using the specified associative binary operator.
-    Given: ds[A]
-           f: (A, A) -> A
-           f is either function or inline transform function and must be associative: f(A, f(B, C)) <=> f(f(A, B), C).
-    Return: A
+    Given: 
+      f: (A, A) -> A
+        f is either function or inline transform function and must be associative: f(A, f(B, C)) <=> f(f(A, B), C).
+      ds[A]
+    Return:
+      A
   */
-  EXPORT Reduce(inputDS, f) := FUNCTIONMACRO
+  EXPORT Reduce(f, inputDS) := FUNCTIONMACRO
     LOCAL Layout := RECORDOF(inputDS);
     #UNIQUENAME(hasTransformer)
     #SET(hasTransformer, FALSE)
@@ -627,15 +656,17 @@
      / \     / \     / \     / \  map  (m)
     A   z   A   z   A   z   A   z
 
-    Given: ds[A]
-           z[B]
-           m: (A, B) -> B
-           f: (B, B) -> B
-           f must be associative: f(A, f(B, C)) <=> f(f(A, B), C).
-           m and f are either functions or inline transform functions.
-    Return: B
+    Given: 
+      f: (B, B) -> B
+        f must be associative: f(A, f(B, C)) <=> f(f(A, B), C).
+      m: (A, B) -> B
+        m and f are either functions or inline transform functions.
+      z[B]
+      ds[A]
+    Return: 
+      B
   */
-  EXPORT Aggregate(inputDS, z, m, f) := FUNCTIONMACRO
+  EXPORT Aggregate(f, m, z, inputDS) := FUNCTIONMACRO
     #UNIQUENAME(FunctionUtils)
     IMPORT utils.FunctionUtils AS %FunctionUtils%;
     #UNIQUENAME(hasTransformer)
@@ -646,7 +677,6 @@
       #SET(hasTransformer, FALSE)
     #END
     LOCAL mappedDS := %FunctionUtils%.Map(
-      inputDS,
       #IF(%hasTransformer%)
         m
       #ELSE
@@ -655,21 +685,23 @@
           SELF := m(LEFT, z)
         )
       #END
+      ,
+      inputDS
     );
-    RETURN %FunctionUtils%.Reduce(mappedDS, f);
+    RETURN %FunctionUtils%.Reduce(f, mappedDS);
   ENDMACRO;
-  EXPORT AggregateValue(inputDS, zVal, m, f) := FUNCTIONMACRO
+  EXPORT AggregateValue(f, m, zVal, inputDS) := FUNCTIONMACRO
     #UNIQUENAME(FunctionUtils)
     IMPORT utils.FunctionUtils AS %FunctionUtils%;
     LOCAL outputLayout := {TYPEOF(zVal) Value};
     LOCAL zrow := ROW({zVal}, outputLayout);
     LOCAL mf(RECORDOF(inputDS) input, outputLayout z) := ROW({m(input, z.Value)}, outputLayout);
     LOCAL ff(outputLayout a, outputLayout b) := ROW({f(a.Value, b.Value)}, outputLayout);
-    LOCAL outputResult := %FunctionUtils%.Aggregate(inputDS, zrow, mf, ff);
+    LOCAL outputResult := %FunctionUtils%.Aggregate(ff, mf, zrow, inputDS);
     RETURN outputResult.Value;
   ENDMACRO;
 
-  EXPORT _PrefixScan_(inputDS, z, f, isFromRight) := FUNCTIONMACRO
+  EXPORT _PrefixScan_(f, z, inputDS, isFromRight) := FUNCTIONMACRO
     LOCAL inputLayout := RECORDOF(inputDS);
     LOCAL outputLayout := RECORDOF(z);
     #UNIQUENAME(g)
@@ -714,17 +746,19 @@
   ENDMACRO;
   /*
     Produce a dataset containing cumulative results of applying the operator going left to right or right to left.
-    Given: ds[A]
-           z[B]
-           f: (B, A) -> B (from left to right) or (A, B) -> B (from right to left).
-           isFromRight: optional, scan from right -> left or left -> right, default left -> right.
-    Return: ds[B]
+    Given:
+      f: (B, A) -> B (from left to right) or (A, B) -> B (from right to left).
+      z[B]
+      ds[A]
+      isFromRight: optional, scan from right -> left or left -> right, default left -> right.
+    Return:
+      ds[B]
   */
-  EXPORT Scan(inputDS, z, f, isFromRight = FALSE) := FUNCTIONMACRO
+  EXPORT Scan(f, z, inputDS, isFromRight = FALSE) := FUNCTIONMACRO
     #UNIQUENAME(FunctionUtils)
     IMPORT utils.FunctionUtils AS %FunctionUtils%;
     LOCAL outputLayout := RECORDOF(z);
-    LOCAL processOutput := %FunctionUtils%._PrefixScan_(inputDS, z, f, isFromRight);
+    LOCAL processOutput := %FunctionUtils%._PrefixScan_(f, z, inputDS, isFromRight);
     LOCAL outputDS := PROJECT(
       processOutput,
       TRANSFORM(
@@ -741,28 +775,32 @@
 
   /*
     Produce a dataset containing cumulative results of applying the operator going left to right.
-    Given: ds[A]
-           z[B]
-           f: (B, A) -> B
-    Return: ds[B]
+    Given: 
+      f: (B, A) -> B
+      z[B]
+      ds[A]
+    Return: 
+      ds[B]
   */
-  EXPORT ScanLeft(inputDS, z, f) := FUNCTIONMACRO
+  EXPORT ScanLeft(f, z, inputDS) := FUNCTIONMACRO
     #UNIQUENAME(FunctionUtils)
     IMPORT utils.FunctionUtils AS %FunctionUtils%;
-    RETURN %FunctionUtils%.Scan(inputDS, z, f, isFromRight := FALSE);
+    RETURN %FunctionUtils%.Scan(f, z, inputDS, isFromRight := FALSE);
   ENDMACRO;
 
   /*
     Produce a dataset containing cumulative results of applying the operator going right to left.
-    Given: ds[A]
-           z[B]
-           f: (A, B) -> B
-    Return: ds[B]
+    Given:
+      f: (A, B) -> B
+      z[B]
+      ds[A]
+    Return:
+      ds[B]
   */
-  EXPORT ScanRight(inputDS, z, f) := FUNCTIONMACRO
+  EXPORT ScanRight(f, z, inputDS) := FUNCTIONMACRO
     #UNIQUENAME(FunctionUtils)
     IMPORT utils.FunctionUtils AS %FunctionUtils%;
-    RETURN %FunctionUtils%.Scan(inputDS, z, f, isFromRight := TRUE);
+    RETURN %FunctionUtils%.Scan(f, z, inputDS, isFromRight := TRUE);
   ENDMACRO;
 
   /*
@@ -780,26 +818,28 @@
              / \            / \
             5  []          z   1
 
-    Given: ds[A]
-           z[B]
-           f: (B, A) -> B
-    Return: B
+    Given: 
+      f: (B, A) -> B
+      z[B]
+      ds[A]
+    Return: 
+      B
   */
-  EXPORT FoldLeft(inputDS, z, f) := FUNCTIONMACRO
+  EXPORT FoldLeft(f, z, inputDS) := FUNCTIONMACRO
     #UNIQUENAME(FunctionUtils)
     IMPORT utils.FunctionUtils AS %FunctionUtils%;
     LOCAL outputLayout := RECORDOF(z);
-    LOCAL processOutput := %FunctionUtils%._PrefixScan_(inputDS, z, f, isFromRight := FALSE);
+    LOCAL processOutput := %FunctionUtils%._PrefixScan_(f, z, inputDS, isFromRight := FALSE);
     LOCAL numberOfInputs := COUNT(inputDS);
     RETURN IF(numberOfInputs > 0, processOutput[numberOfInputs].cumulative, z);
   ENDMACRO;
-  EXPORT FoldLeftValue(inputDS, zVal, f) := FUNCTIONMACRO
+  EXPORT FoldLeftValue(f, zVal, inputDS) := FUNCTIONMACRO
     #UNIQUENAME(FunctionUtils)
     IMPORT utils.FunctionUtils AS %FunctionUtils%;
     LOCAL outputLayout := {TYPEOF(zVal) Value};
     LOCAL zrow := ROW({zVal}, outputLayout);
     LOCAL ff(outputLayout z, RECORDOF(inputDS) input) := ROW({f(z.Value, input)}, outputLayout);
-    LOCAL outputResult := %FunctionUtils%.FoldLeft(inputDS, zrow, ff);
+    LOCAL outputResult := %FunctionUtils%.FoldLeft(ff, zrow, inputDS);
     RETURN outputResult.Value;
   ENDMACRO;
 
@@ -818,25 +858,27 @@
              / \                       / \
             5  []                     5   z
 
-    Given: ds[A]
-           z[B]
-           f: (A, B) -> B
-    Return: B
+    Given: 
+      f: (A, B) -> B
+      z[B]
+      ds[A]
+    Return: 
+      B
   */
-  EXPORT FoldRight(inputDS, z, f) := FUNCTIONMACRO
+  EXPORT FoldRight(f, z, inputDS) := FUNCTIONMACRO
     #UNIQUENAME(FunctionUtils)
     IMPORT utils.FunctionUtils AS %FunctionUtils%;
     LOCAL outputLayout := RECORDOF(z);
-    LOCAL processOutput := %FunctionUtils%._PrefixScan_(inputDS, z, f, isFromRight := TRUE);
+    LOCAL processOutput := %FunctionUtils%._PrefixScan_(f, z, inputDS, isFromRight := TRUE);
     RETURN IF(COUNT(inputDS) > 0, processOutput[1].cumulative, z);
   ENDMACRO;
-  EXPORT FoldRightValue(inputDS, zVal, f) := FUNCTIONMACRO
+  EXPORT FoldRightValue(f, zVal, inputDS) := FUNCTIONMACRO
     #UNIQUENAME(FunctionUtils)
     IMPORT utils.FunctionUtils AS %FunctionUtils%;
     LOCAL outputLayout := {TYPEOF(zVal) Value};
     LOCAL zrow := ROW({zVal}, outputLayout);
     LOCAL ff(RECORDOF(inputDS) input, outputLayout z) := ROW({f(input, z.Value)}, outputLayout);
-    LOCAL outputResult := %FunctionUtils%.FoldRight(inputDS, zrow, ff);
+    LOCAL outputResult := %FunctionUtils%.FoldRight(ff, zrow, inputDS);
     RETURN outputResult.Value;
   ENDMACRO;
 

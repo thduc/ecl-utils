@@ -23,12 +23,12 @@ OUTPUT(ds1) =>
 | 1       | 2       | ab        |
 ```
 
-* **SlimDatasetByFields(inputDS, fields2Keep)**: Slim input dataset (aka SELECT), keep only given fields.
-  * **inputDS**: input dataset.
-  * **fields2Keep**: set of fields to keep.<br/>
+* **SlimDatasetByFields(fields2Keep, inputDS)**: Slim input dataset (aka SELECT), keep only given fields.
+  * **fields2Keep**: set of fields to keep.
+  * **inputDS**: input dataset.<br/>
 _Example_:
 ```
-SlimDatasetByFields(ds1, ['intVal1', 'stringVal']) =>
+SlimDatasetByFields(['intVal1', 'stringVal'], ds1) =>
 
 | intval1 | stringval |
 |---------|-----------|
@@ -47,26 +47,26 @@ CreateDataset(rec4, ['intVal1', 'intVal2', 'stringVal'], [{1, 2, 'ab'}]) =>
 |---------|---------|-----------|---------|---------|
 | 1       | 2       | ab        | false   | 0.0     |
 ```
-* **TransformDataset(inputDS, f)**: Transform a dataset to a given layout or inline transform function. In case of layout fill missing fields with default values.
-  * **inputDS**: input dataset.
-  * **f**: either target layout or inline transform function.<br/>
+* **TransformDataset(f, inputDS)**: Transform a dataset to a given layout or inline transform function. In case of layout fill missing fields with default values.
+  * **f**: either target layout or inline transform function.
+  * **inputDS**: input dataset.<br/>
 _Example_:
 ```
 rec2 := rec1 AND NOT [intVal2];
-TransformDataset(ds1, rec2) =>
+TransformDataset(rec2, ds1) =>
 
 | intval1 | stringval |
 |---------|-----------|
 | 1       | ab        |
 
 rec4 := {rec1, BOOLEAN boolVal, REAL realVal};
-TransformDataset(ds1, rec4) =>
+TransformDataset(rec4, ds1) =>
 
 | intval1 | intval2 | stringval | boolval | realval |
 |---------|---------|-----------|---------|---------|
 | 1       | 2       | ab        | false   | 0.0     |
 
-TransformDataset(ds1, TRANSFORM(rec4, SELF := LEFT, SELF := [])) =>
+TransformDataset(TRANSFORM(rec4, SELF := LEFT, SELF := []), ds1) =>
 
 | intval1 | intval2 | stringval | boolval | realval |
 |---------|---------|-----------|---------|---------|
@@ -79,6 +79,8 @@ Functional programming utilities. There exists functions for dataset and set. Th
 
 _Example_: Function to filter dataset is `Filter`, function to filter set is `FilterSet`.
 
+There exists some additional functions available for `Set` only (`Map2Sets`, `Map3Sets`, `Aggregate2Sets`, `Aggregate3Sets`).
+
 Following are documentation for functions for dataset. 
 
 ```
@@ -87,13 +89,13 @@ intDS1 := DATASET([{1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}], IntRec1);
 IntStrRec1 := {INTEGER intVal1, INTEGER intVal2, STRING strVal};
 ```
 
-* **Filter(inputDS, p)**: Filter dataset, return rows satisfying a given predicate.
-  * **inputDS**: input dataset of type A.
-  * **p**: `A -> Boolean` predicate to filter.<br/>
+* **Filter(p, inputDS)**: Filter dataset, return rows satisfying a given predicate.
+  * **p**: `A -> Boolean` predicate to filter.
+  * **inputDS**: input dataset of type A.<br/>
 _Example_:
 ```
 BOOLEAN predicate1(IntRec1 inputRow) := inputRow.value & 0x01 = 0;
-FunctionUtils.Filter(intDS1, predicate1) =>
+FunctionUtils.Filter(predicate1, intDS1) =>
 
 | value |
 |-------|
@@ -103,13 +105,13 @@ FunctionUtils.Filter(intDS1, predicate1) =>
 |     8 |
 ```
 
-* **Map(inputDS, f)**: Map (transform) dataset of type A to type B.
-  * **inputDS**: input dataset of type A.
-  * **f**: `A -> B` either function or inline transform function.<br/>
+* **Map(f, inputDS)**: Map (transform) dataset of type A to type B.
+  * **f**: `A -> B` either function or inline transform function.
+  * **inputDS**: input dataset of type A.<br/>
 _Example_:
 ```
 IntStrRec1 mapper1(IntRec1 x) := ROW({x.value, 10 * x.value, (STRING) x.value}, IntStrRec1);
-FunctionUtils.Map(intDS1, mapper1) =>
+FunctionUtils.Map(mapper1, intDS1) =>
 
 | intval1 | intval2 | strval |
 |---------|---------|--------|
@@ -124,40 +126,40 @@ FunctionUtils.Map(intDS1, mapper1) =>
 | 9       | 90      | 9      |
 
 mappedDS2 := FunctionUtils.Map(
-  intDS1,
   TRANSFORM(
     IntStrRec1,
     SELF := mapper1(LEFT)
-  )
+  ),
+  intDS1
 ) => same result as above.
 ```
 
-* **Reduce(inputDS, f)**: Reduce the dataset to an element using the specified associative binary operator.
-  * **inputDS**: input dataset of type A.
-  * **f**: `(A, A) -> A` either function or inline transform function and must be associative: `f(A, f(B, C)) <=> f(f(A, B), C)`.<br/>
+* **Reduce(f, inputDS)**: Reduce the dataset to an element using the specified associative binary operator.
+  * **f**: `(A, A) -> A` either function or inline transform function and must be associative: `f(A, f(B, C)) <=> f(f(A, B), C)`.
+  * **inputDS**: input dataset of type A.<br/>
 _Example_:
 ```
 IntRec1 reducer11(IntRec1 x, IntRec1 y) := ROW({x.value + y.value}, IntRec1); // add
-FunctionUtils.Reduce(intDS1, reducer11) => ROW({45}, IntRec1)
+FunctionUtils.Reduce(reducer11, intDS1) => ROW({45}, IntRec1)
 
 FunctionUtils.Reduce(
-  intDS1,
   TRANSFORM(
     IntRec1,
     SELF := reducer11(LEFT, RIGHT)
-  )
+  ),
+  intDS1
 ) => ROW({45}, IntRec1)
 
 
 IntRec1 reducer12(IntRec1 x, IntRec1 y) := ROW({x.value * y.value}, IntRec1); // multiply
-FunctionUtils.Reduce(intDS1, reducer12) => ROW({362880}, IntRec1)
+FunctionUtils.Reduce(reducer12, intDS1) => ROW({362880}, IntRec1)
 ```
 
-* **Aggregate(inputDS, z, m, f)**: Aggregate the results of applying an operator to subsequent elements.
-  * **inputDS**: input dataset of type A.
-  * **z**: element of type B, initial value for the accumulated result of the partition, this is typically the neutral element for the `m` operator.
-  * **m**: `(A, B) -> B` either function or inline transform function.<br/>
+* **Aggregate(f, m, z, inputDS)**: Aggregate the results of applying an operator to subsequent elements.
   * **f**: `(B, B) -> B` either function or inline transform function and must be associative: `f(A, f(B, C)) <=> f(f(A, B), C)`.
+  * **m**: `(A, B) -> B` either function or inline transform function.
+  * **z**: element of type B, initial value for the accumulated result of the partition, this is typically the neutral element for the `m` operator.
+  * **inputDS**: input dataset of type A.<br/>
 ```
         ----- B -----
        /             \        reduce (f)
@@ -172,40 +174,40 @@ _Example_:
 neutralRowIntStr1 := ROW({0, 1, ''}, IntStrRec1);
 IntStrRec1 mapper2(IntRec1 x, IntStrRec1 z) := ROW({x.value + z.intVal1, x.value * z.intVal2, z.strVal + x.value}, IntStrRec1);
 IntStrRec1 reducer2(IntStrRec1 x, IntStrRec1 y) := ROW({x.intVal1 + y.intVal1, x.intVal2 * y.intVal2, x.strVal + '-' + y.strVal}, IntStrRec1);
-FunctionUtils.Aggregate(intDS1, neutralRowIntStr1, mapper2, reducer2) => ROW({45, 362880, '1-2-3-4-5-6-7-8-9'}, IntStrRec1)
+FunctionUtils.Aggregate(reducer2, mapper2, neutralRowIntStr1, intDS1) => ROW({45, 362880, '1-2-3-4-5-6-7-8-9'}, IntStrRec1)
 
 FunctionUtils.Aggregate(
-  intDS1,
-  neutralRowIntStr1,
+  TRANSFORM(
+    IntStrRec1,
+    SELF := reducer2(LEFT, RIGHT)
+  ),
   TRANSFORM(
     IntStrRec1,
     SELF := mapper2(LEFT, neutralRowIntStr1)
   ),
-  TRANSFORM(
-    IntStrRec1,
-    SELF := reducer2(LEFT, RIGHT)
-  )
+  neutralRowIntStr1,
+  intDS1
 ) => same result as above.
 ```
 
-* **AggregateValue(inputDS, zVal, m, f)**: Similar to the function `Aggregate` above except `zVal` is value (instead of record as before), `m` and `f` must be functions.<br/>
+* **AggregateValue(f, m, zVal, inputDS)**: Similar to the function `Aggregate` above except `zVal` is value (instead of record as before), `m` and `f` must be functions.<br/>
 _Example_:
 ```
 INTEGER mapper3(IntRec1 input, INTEGER i) := input.value + i;
 INTEGER reducer3(INTEGER a, INTEGER b) := a + b;
-FunctionUtils.AggregateValue(intDS1, 0, mapper3, reducer3) => 45
+FunctionUtils.AggregateValue(reducer3, mapper3, 0, intDS1) => 45
 ```
 
-* **Scan(inputDS, z, f, isFromRight)**: Produce a dataset containing cumulative results of applying the operator going left to right or right to left.
-  * **inputDS**: input dataset of type A.
-  * **z**: element of type B, initial value for the binary operator.
+* **Scan(f, z, inputDS, isFromRight)**: Produce a dataset containing cumulative results of applying the operator going left to right or right to left.
   * **f**: `(B, A) -> B` (from left to right) or `(A, B) -> B` (from right to left).
+  * **z**: element of type B, initial value for the binary operator.
+  * **inputDS**: input dataset of type A.
   * **isFromRight**: optional, scan from right -> left or left -> right, default left -> right.<br/>
 _Example_:
 ```
 cumSumNeutralRowIntStr1 := ROW({0, 0, '0'}, IntStrRec1);
 IntStrRec1 lscanfunc1(IntStrRec1 x, IntRec1 y) := ROW({y.value, x.intVal2 + y.value, x.strVal + ' + ' + (STRING)y.value}, IntStrRec1);
-FunctionUtils.Scan(intDS1, cumSumNeutralRowIntStr1, lscanfunc1) => // scan from left -> right.
+FunctionUtils.Scan(lscanfunc1, cumSumNeutralRowIntStr1, intDS1) => // scan from left -> right.
 
 | intval1 | intval2 | strval                                |
 |---------|---------|---------------------------------------|
@@ -222,7 +224,7 @@ FunctionUtils.Scan(intDS1, cumSumNeutralRowIntStr1, lscanfunc1) => // scan from 
 
 cumProdNeutralRowIntStr1 := ROW({0, 1, '1'}, IntStrRec1);
 IntStrRec1 rscanfunc1(IntRec1 x, IntStrRec1 y) := ROW({x.value, x.value * y.intVal2, (STRING)x.value + ' * ' + y.strVal}, IntStrRec1);
-FunctionUtils.Scan(intDS1, cumProdNeutralRowIntStr1, rscanfunc1, isFromRight := TRUE) => // scan from right -> left.
+FunctionUtils.Scan(rscanfunc1, cumProdNeutralRowIntStr1, intDS1, isFromRight := TRUE) => // scan from right -> left.
 
 | intval1 | intval2 | strval                                |
 |---------|---------|---------------------------------------|
@@ -237,24 +239,24 @@ FunctionUtils.Scan(intDS1, cumProdNeutralRowIntStr1, rscanfunc1, isFromRight := 
 | 9       | 9       | 9 * 1                                 |
 ```
 
-* **ScanLeft(inputDS, z, f)**: Produce a dataset containing cumulative results of applying the operator going left to right.
+* **ScanLeft(f, z, inputDS)**: Produce a dataset containing cumulative results of applying the operator going left to right.
   * **f**: `(B, A) -> B` (from left to right).<br/>
 _Example_:
 ```
-FunctionUtils.ScanLeft(intDS1, cumSumNeutralRowIntStr1, lscanfunc1) => same as above.
+FunctionUtils.ScanLeft(lscanfunc1, cumSumNeutralRowIntStr1, intDS1) => same as above.
 ```
 
-* **ScanRight(inputDS, z, f)**: Produce a dataset containing cumulative results of applying the operator going right to left.
+* **ScanRight(f, z, inputDS)**: Produce a dataset containing cumulative results of applying the operator going right to left.
   * **f**: `(A, B) -> B` (from right to left).<br/>
 _Example_:
 ```
-FunctionUtils.ScanRight(intDS1, cumProdNeutralRowIntStr1, rscanfunc1) => same as above.
+FunctionUtils.ScanRight(rscanfunc1, cumProdNeutralRowIntStr1, intDS1) => same as above.
 ```
 
-* **FoldLeft(inputDS, z, f)**: Apply a binary operator to a start value and all elements going left to right.
-  * **inputDS**: input dataset of type A.
-  * **z**: element of type B, initial value for the binary operator.
+* **FoldLeft(f, z, inputDS)**: Apply a binary operator to a start value and all elements going left to right.
   * **f**: `(B, A) -> B` the binary operator.
+  * **z**: element of type B, initial value for the binary operator.
+  * **inputDS**: input dataset of type A.
 ```
   :           FoldLeft           f
  / \          ------->          / \
@@ -270,18 +272,18 @@ FunctionUtils.ScanRight(intDS1, cumProdNeutralRowIntStr1, rscanfunc1) => same as
 ```
 _Example_:
 ```
-FunctionUtils.FoldLeft(intDS1, cumSumNeutralRowIntStr1, lscanfunc1) => ROW({9, 45, '0 + 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9'}, IntStrRec1)
+FunctionUtils.FoldLeft(lscanfunc1, cumSumNeutralRowIntStr1, intDS1) => ROW({9, 45, '0 + 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9'}, IntStrRec1)
 
 neutralRowInt1 := ROW({0}, IntRec1);
 IntRec1 folder1(IntRec1 x, IntRec1 y) := ROW({x.value + y.value}, IntRec1);
-FunctionUtils.FoldLeft(intDS1, neutralRowInt1, folder1) => ROW({45}, IntRec1)
+FunctionUtils.FoldLeft(folder1, neutralRowInt1, intDS1) => ROW({45}, IntRec1)
 ```
 
-* **FoldLeftValue(inputDS, zVal, f)**: Similar to the function `FoldLeft` above except `zVal` is value (instead of record as before).<br/>
+* **FoldLeftValue(f, zVal, inputDS)**: Similar to the function `FoldLeft` above except `zVal` is value (instead of record as before).<br/>
 _Example_:
 ```
 INTEGER folder2(INTEGER i, IntRec1 r) := i + r.value;
-FunctionUtils.FoldLeftValue(intDS1, 0, folder2) => 45
+FunctionUtils.FoldLeftValue(folder2, 0, intDS1) => 45
 
 
 TokenMapRec := {STRING token, STRING value};
@@ -299,13 +301,13 @@ tokenMap := DATASET(
 );
 STRING replaceToken(STRING inputStr, TokenMapRec r) := Str.FindReplace(inputStr, r.token, r.value);
 STRING fileNameTemplate := '~[Root]::[Branch]::[Entities]::[SourceSystemGroup]::[SourceSystem]::[EntityName]::[Suffix]';
-FunctionUtils.FoldLeftValue(tokenMap, fileNameTemplate, replaceToken) => '~proagrica::develop::entities::uk::gk::crop::super'
+FunctionUtils.FoldLeftValue(replaceToken, fileNameTemplate, tokenMap) => '~proagrica::develop::entities::uk::gk::crop::super'
 ```
 
-* **FoldRight(inputDS, z, f)**: Apply a binary operator to a start value and all elements going right to left.
-  * **inputDS**: input dataset of type A.
-  * **z**: element of type B, initial value for the binary operator.
+* **FoldRight(f, z, inputDS)**: Apply a binary operator to a start value and all elements going right to left.
   * **f**: `(A, B) -> B` the binary operator.
+  * **z**: element of type B, initial value for the binary operator.
+  * **inputDS**: input dataset of type A.
 ```
   :           FoldRight     f
  / \          -------->    / \
@@ -321,16 +323,16 @@ FunctionUtils.FoldLeftValue(tokenMap, fileNameTemplate, replaceToken) => '~proag
 ```
 _Example_:
 ```
-FunctionUtils.FoldRight(intDS1, cumProdNeutralRowIntStr1, rscanfunc1) => ROW({1, 362880, '1 * 2 * 3 * 4 * 5 * 6 * 7 * 8 * 9 * 1'}, IntStrRec1)
+FunctionUtils.FoldRight(rscanfunc1, cumProdNeutralRowIntStr1, intDS1) => ROW({1, 362880, '1 * 2 * 3 * 4 * 5 * 6 * 7 * 8 * 9 * 1'}, IntStrRec1)
 
-FunctionUtils.FoldRight(intDS1, neutralRowInt1, folder1) => ROW({45}, IntRec1)
+FunctionUtils.FoldRight(folder1, neutralRowInt1, intDS1) => ROW({45}, IntRec1)
 ```
 
-* **FoldRightValue(inputDS, zVal, f)**: Similar to the function `FoldRight` above except `zVal` is value (instead of record as before).<br/>
+* **FoldRightValue(f, zVal, inputDS)**: Similar to the function `FoldRight` above except `zVal` is value (instead of record as before).<br/>
 _Example_:
 ```
 folder3(IntRec1 r, INTEGER i) := r.value + i;
-FunctionUtils.FoldRightValue(intDS1, 0, folder3) => 45
+FunctionUtils.FoldRightValue(folder3, 0, intDS1) => 45
 ```
 
 ---
@@ -447,14 +449,14 @@ row4 := ROW({1, 0, 'a'}, rec1);
     * **intputRow**: input row/record.
     * **fieldName**: comma-delimited list of fields to update value.<br/>
   _Example_: `m1.CopyRecord(row1, intVal2 := 2, stringVal := 'b') => row2`
-* **SlimLayout(layout, fields2Keep)**: create a slim layout with only interested fields/attributes.
-  * **layout**: layout to slim.
-  * **fields2Keep**: set of fields to keep.<br/>
-_Example_: `SlimLayout(rec1, ['intVal1', 'stringVal']) => {INTEGER intVal1, STRING stringVal}`
-* **TransformRecord(inputRow, layout)**: transform a record to a given layout. Fill missing fields (if any) with default values.
-  * **intputRow**: input row/record.
-  * **layout**: layout Layout.<br/>
-_Example_: `TransformRecord(row3, rec1) => row4`
+* **SlimLayout(fields2Keep, layout)**: create a slim layout with only interested fields/attributes.
+  * **fields2Keep**: set of fields to keep.
+  * **layout**: layout to slim.<br/>
+_Example_: `SlimLayout(['intVal1', 'stringVal'], rec1) => {INTEGER intVal1, STRING stringVal}`
+* **TransformRecord(layout, inputRow)**: transform a record to a given layout. Fill missing fields (if any) with default values.
+  * **layout**: layout Layout.
+  * **intputRow**: input row/record.<br/>
+_Example_: `TransformRecord(rec1, row3) => row4`
 
 * **GetFieldStructure(input)**: return dataset containing information about data type of a record type or dataset.
   * **input**: dataset or layout.<br/>
