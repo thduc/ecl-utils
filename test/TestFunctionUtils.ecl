@@ -17,6 +17,8 @@ string2Int(STRING s) := (INTEGER)s;
 int2String(INTEGER i) := (STRING)i;
 sumInts(INTEGER x, INTEGER y) :=  x + y;
 stringConcats(STRING s1, STRING s2) := s1 + s2;
+isEven(INTEGER i) := (i & 0x01) = 0;
+isOdd(INTEGER i) := NOT isEven(i);
 
 SET OF STRING setOfDigits1 := FunctionUtils.FilterSet(isDigit, setOfStrings1);
 SET OF STRING setOfLetters1 := FunctionUtils.FilterSet(isLetter, setOfStrings1);
@@ -43,6 +45,9 @@ STRING foldLeftDigits1 := FunctionUtils.FoldLeftSet(stringConcats, (STRING)'Digi
 ASSERT(foldLeftDigits1 = 'Digits12345', 'FoldLeftSet must correctly fold set of strings to string value');
 STRING foldRightDigits1 := FunctionUtils.FoldRightSet(stringConcats, (STRING)'Digits', setOfDigits1);
 ASSERT(foldRightDigits1 = '12345Digits', 'FoldRightSet must correctly fold set of strings to string value');
+
+ASSERT(FunctionUtils.AnySetItem(isEven, setOfInts1) = TRUE, 'AnySetItem must correctly check if set contains at least one item satisfied the predicate');
+ASSERT(FunctionUtils.AllSetItems(isOdd, setOfInts1) = FALSE, 'AllSetItems must correctly check if set contains at all items satisfied the predicate');
 
 OUTPUT(setOfStrings1, NAMED('SetOfStrings1'));
 OUTPUT(setOfDigits1, NAMED('FilterSet_SetOfDigitsOnly'));

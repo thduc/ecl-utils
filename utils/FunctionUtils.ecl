@@ -1,6 +1,120 @@
 ﻿EXPORT FunctionUtils := MODULE
 
   /*
+    Create a set by repeating a given item i n times.
+    Given: 
+      i: item (of type B) to repeat.
+      n: number of times to repeat.
+    Return:
+      set[B]
+  */
+  EXPORT RepeatSet(i, n) := FUNCTIONMACRO
+    #UNIQUENAME(StdStr)
+    IMPORT STD.Str AS %StdStr%;
+
+    #UNIQUENAME(idx)
+    #UNIQUENAME(value)
+    #UNIQUENAME(dtype)
+    #UNIQUENAME(ttype)
+    #UNIQUENAME(isStringSet)
+
+    #SET(ttype, #GETDATATYPE(i))
+
+    #SET(isStringSet, 0)
+    #IF(%StdStr%.StartsWith(%'ttype'%, 'string'))
+      #SET(isStringSet, 1)
+    #END
+
+    #SET(idx, 1)
+    #SET(value, '[')
+    #LOOP
+      #IF(%idx% > n)
+        #BREAK
+      #END
+      #IF(%'value'% != '[')
+        #APPEND(value, ', ')
+      #END
+      #IF(%isStringSet% = 1)
+        #APPEND(value, '\'' + i + '\'')
+      #ELSE
+        #APPEND(value, i)
+      #END
+      #SET(idx, %idx% + 1)
+    #END
+    #APPEND(value, ']')
+    LOCAL #EXPAND('set of ' + %'ttype'%) outputSet := %value%;
+    RETURN outputSet;
+  ENDMACRO;
+
+  /*
+    Check if there exists any item in the input set satisfying a given predicate.
+    Given: 
+      p: A -> Boolean
+      ds[A]
+    Return: 
+      - TRUE: if there exists an item such that p = True.
+      - FALSE: otherwise.
+  */
+  EXPORT AnySetItem(p, inputSet) := FUNCTIONMACRO
+    #UNIQUENAME(resultStr)
+    #UNIQUENAME(idx)
+    #UNIQUENAME(size)
+    #UNIQUENAME(stype)
+    #UNIQUENAME(isStringSet)
+
+    #SET(idx, 1)
+    #SET(size, COUNT(inputSet))
+    #SET(resultStr, 'FALSE')
+    #LOOP
+      #IF(%idx% > %size%)
+        #BREAK
+      #END
+      #IF(p(inputSet[%idx%]))
+        #SET(resultStr, 'TRUE')
+        #BREAK
+      #END
+      #SET(idx, %idx% + 1)
+    #END
+
+    LOCAL BOOLEAN resultVal := %resultStr%;
+    RETURN resultVal;
+  ENDMACRO;
+
+  /*
+    Check if all items in the input set satisfying a given predicate.
+    Given: 
+      p: A -> Boolean
+      ds[A]
+    Return: 
+      - TRUE: if all items satisfy predicate p.
+      - FALSE: otherwise.
+  */
+  EXPORT AllSetItems(p, inputSet) := FUNCTIONMACRO
+    #UNIQUENAME(resultStr)
+    #UNIQUENAME(idx)
+    #UNIQUENAME(size)
+    #UNIQUENAME(stype)
+    #UNIQUENAME(isStringSet)
+
+    #SET(idx, 1)
+    #SET(size, COUNT(inputSet))
+    #SET(resultStr, 'TRUE')
+    #LOOP
+      #IF(%idx% > %size%)
+        #BREAK
+      #END
+      #IF(NOT p(inputSet[%idx%]))
+        #SET(resultStr, 'FALSE')
+        #BREAK
+      #END
+      #SET(idx, %idx% + 1)
+    #END
+
+    LOCAL BOOLEAN resultVal := %resultStr%;
+    RETURN resultVal;
+  ENDMACRO;
+
+  /*
     Filter set, return set of items satisfying a given predicate.
     Given: 
       p: A -> Boolean (function).
@@ -548,6 +662,59 @@
     IMPORT utils.FunctionUtils AS %FunctionUtils%;
     LOCAL outputSet := %FunctionUtils%.ScanRightSet(f, z, inputSet);
     RETURN IF(COUNT(inputSet) > 0, outputSet[1], z);
+  ENDMACRO;
+
+  /*
+    Create a dataset by repeating a given row r n times.
+    Given: 
+      r: item (of type B) to repeat.
+      n: number of times to repeat.
+    Return:
+      ds[B]
+  */
+  EXPORT Repeat(r, n) := FUNCTIONMACRO
+    LOCAL Layout := RECORDOF(r);
+    LOCAL outputDS := DATASET(
+      n,
+      TRANSFORM(
+        Layout,
+        SELF := r
+      )
+    );
+    RETURN outputDS;
+  ENDMACRO;
+
+  /*
+    Check if there exists any record in the input dataset satisfying a given predicate.
+    Given: 
+      p: A -> Boolean
+      ds[A]
+    Return: 
+      - TRUE: if there exists a record such that p = True.
+      - FALSE: otherwise.
+  */
+  EXPORT AnyItem(p, inputDS) := FUNCTIONMACRO
+    #UNIQUENAME(FunctionUtils)
+    IMPORT utils.FunctionUtils AS %FunctionUtils%;
+    LOCAL outputDS := %FunctionUtils%.Filter(p, inputDS);
+    RETURN EXISTS(outputDS)
+  ENDMACRO;
+
+  /*
+    Check if all records in the input dataset satisfying a given predicate.
+    Given: 
+      p: A -> Boolean
+      ds[A]
+    Return: 
+      - TRUE: if all records satisfy predicate p.
+      - FALSE: otherwise.
+  */
+  EXPORT AllItems(p, inputDS) := FUNCTIONMACRO
+    #UNIQUENAME(FunctionUtils)
+    IMPORT utils.FunctionUtils AS %FunctionUtils%;
+    LOCAL TYPEOF(p) notP(RECORDOF(inputDS) r) := NOT p(r);
+    LOCAL outputDS := %FunctionUtils%.Filter(notP, inputDS);
+    RETURN NOT EXISTS(outputDS)
   ENDMACRO;
 
   /*
